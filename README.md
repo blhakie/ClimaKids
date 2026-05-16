@@ -147,15 +147,15 @@ Built with **Leaflet.js + PostGIS**:
 
 ### Hardware Specifications
 
-| Component | Model | Measurement | Cost (USD) |
-|-----------|-------|-------------|------------|
-| Microcontroller | ESP32 DevKit V1 | WiFi + BLE + GPIO | $4-6 |
-| Temperature & Humidity | DHT22 / SHT31 | T (°C), H (%) | $2-4 |
-| CO₂ Sensor | MH-Z19B (NDIR) | CO₂ (0-5000 ppm) | $5-8 |
-| UV Sensor | GUVA-S12SD | UV Index (0-11+) | $1-2 |
-| Rain Sensor | FC-37 / YL-83 | Presence & intensity | $1-2 |
-| Battery | Li-Ion 3.7V 2000mAh + TP4056 | ~8h autonomy | $3-5 |
-| Enclosure | ABS UV-resistant (IP54) | Weather protection | $2-4 |
+| Component | Model | Measurement | 
+|-----------|-------|-------------|
+| Microcontroller | ESP32 DevKit V1 | WiFi + BLE + GPIO |
+| Temperature & Humidity | DHT22 / SHT31 | T (°C), H (%) | 
+| CO₂ Sensor | MH-Z19B (NDIR) | CO₂ (0-5000 ppm) |
+| UV Sensor | GUVA-S12SD | UV Index (0-11+) |
+| Rain Sensor | FC-37 / YL-83 | Presence & intensity |
+| Battery | Li-Ion 3.7V 2000mAh + TP4056 | ~8h autonomy | 
+| Enclosure | ABS UV-resistant (IP54) | Weather protection | 
 
 **Total Kit Cost:** $18-31 per unit (scales to $14-22 in batches of 100+)
 
