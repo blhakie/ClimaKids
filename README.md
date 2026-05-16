@@ -516,6 +516,6 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 **Built with ❤️ in Mozambique for a climate-resilient future**
 
-[⭐ Star this repo](https://github.com/aguiaconsultores/climakids) · [📖 Documentation](docs/) · [🐛 Report Bug](https://github.com/aguiaconsultores/climakids/issues) · [💡 Request Feature](https://github.com/aguiaconsultores/climakids/issues)
+[⭐ Star this repo](https://github.com/blhakie/climakids)
 
 </div>
