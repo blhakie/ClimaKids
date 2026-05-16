@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClimaKids</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sky:#38BDF8;--sky-d:#0EA5E9;--green:#22C55E;--green-d:#16A34A;
+  --green-dk:#14532D;--sun:#FCD34D;--sun-d:#F59E0B;--leaf:#86EFAC;
+  --danger:#EF4444;--warn:#FB923C;--white:#FFF;--bg:#F0FDF9;
+  --text:#0F4C35;--muted:#6EAA88;--rule:#D1FAE5;
+  --mono:'JetBrains Mono',monospace
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#0d1a0d;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:28px 16px 44px}
+
+/* page header */
+.page-h{text-align:center;margin-bottom:22px}
+.page-h h1{font-size:2.1rem;font-weight:900;color:#fff;letter-spacing:-1px}
+.page-h h1 em{color:#38BDF8;font-style:normal}
+.page-h p{font-family:var(--mono);font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:#4ade80;margin-top:4px}
+
+/* phone shell */
+.phone{width:390px;height:844px;background:#000;border-radius:54px;padding:14px;
+  box-shadow:0 0 0 1px #2a2a2a,0 0 0 3px #1a1a1a,0 40px 100px rgba(0,0,0,.65),inset 0 0 24px rgba(255,255,255,.025);position:relative}
+.screen-wrap{width:100%;height:100%;border-radius:44px;overflow:hidden;position:relative;background:var(--bg)}
+.notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:120px;height:36px;background:#000;border-radius:0 0 20px 20px;z-index:60}
+.sbar{position:absolute;top:0;left:0;right:0;height:50px;display:flex;align-items:center;justify-content:space-between;padding:14px 22px 0;z-index:50;font-family:var(--mono);font-size:.68rem;color:var(--text)}
+.sbar.inv{color:rgba(255,255,255,.85)}
+.sicons{display:flex;gap:5px;align-items:center}
+
+.scr{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden}
+.scr.on{display:flex}
+
+/* bottom nav — 6 buttons */
+.bnav{position:absolute;bottom:0;left:0;right:0;height:80px;background:#fff;border-top:2px solid var(--rule);display:flex;align-items:center;justify-content:space-around;padding:0 2px 14px;z-index:40;border-radius:0 0 44px 44px}
+.nb{display:flex;flex-direction:column;align-items:center;gap:1px;background:none;border:none;cursor:pointer;padding:4px 7px;border-radius:12px;transition:background .2s;position:relative}
+.nb svg{width:22px;height:22px;stroke:var(--muted)}
+.nb span{font-family:'Plus Jakarta Sans',sans-serif;font-size:.52rem;font-weight:700;color:var(--muted)}
+.nb.on svg{stroke:var(--green-d)}.nb.on span{color:var(--green-d)}.nb.on{background:#f0fdf4}
+.nb.on::before{content:'';position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:20px;height:3px;background:var(--green);border-radius:0 0 4px 4px}
+/* game nav button — accent purple */
+.nb.game svg{stroke:#7c3aed}.nb.game span{color:#7c3aed}
+.nb.game.on{background:#f5f3ff}.nb.game.on svg{stroke:#6d28d9}.nb.game.on span{color:#6d28d9}
+.nb.game.on::before{background:#7c3aed}
+
+.sh{display:flex;align-items:center;justify-content:space-between;padding:13px 20px 7px}
+.sh h3{font-size:.87rem;font-weight:800;color:var(--text)}
+.sa{font-family:var(--mono);font-size:.59rem;color:var(--green-d);background:none;border:none;cursor:pointer}
+
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes xp{from{width:0}}
+@keyframes popin{from{transform:scale(.45);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes blink{50%{opacity:.25}}
+@keyframes pulse{0%,100%{box-shadow:0 4px 18px rgba(56,189,248,.4)}50%{box-shadow:0 4px 32px rgba(56,189,248,.75)}}
+@keyframes msg{from{opacity:0;transform:translateY(8px)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes correct{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes wrong{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}60%{transform:translateX(6px)}}
+@keyframes confetti{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(60px) rotate(720deg);opacity:0}}
+
+/* ═══════════ HOME ═══════════ */
+#s0{background:linear-gradient(155deg,#e0f7fa 0%,#f0fdf4 55%,#fefce8 100%)}
+.htop{padding:54px 20px 12px;display:flex;align-items:flex-start;justify-content:space-between}
+.hg span{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.hn{font-size:1.5rem;font-weight:900;color:var(--text);line-height:1.1}
+.havw{display:flex;flex-direction:column;align-items:center;gap:3px}
+.hlvl{font-family:var(--mono);font-size:.53rem;background:var(--green-d);color:#fff;padding:2px 8px;border-radius:100px}
+.wcard{margin:4px 18px;background:linear-gradient(130deg,#0ea5e9 0%,#22c55e 100%);border-radius:24px;padding:17px 20px;position:relative;overflow:hidden;box-shadow:0 8px 30px rgba(14,165,233,.35)}
+.wcard::before{content:'';position:absolute;top:-30px;right:-20px;width:130px;height:130px;background:rgba(255,255,255,.1);border-radius:50%}
+.wt{display:flex;justify-content:space-between;align-items:flex-start}
+.wloc{font-family:var(--mono);font-size:.6rem;color:rgba(255,255,255,.7);letter-spacing:.1em;text-transform:uppercase}
+.wtemp{font-size:2.7rem;font-weight:900;color:#fff;line-height:1}
+.wtemp sup{font-size:1.1rem;font-weight:600;vertical-align:super}
+.wdesc{font-size:.78rem;color:rgba(255,255,255,.82);margin-top:3px}
+.wstats{display:flex;gap:14px;margin-top:11px}
+.wstat{display:flex;align-items:center;gap:5px;font-size:.68rem;color:rgba(255,255,255,.88);font-weight:700}
+.xpr{margin:9px 18px 0;display:flex;align-items:center;gap:9px}
+.xpl{font-family:var(--mono);font-size:.58rem;color:var(--muted);white-space:nowrap}
+.xpb{flex:1;height:7px;background:var(--rule);border-radius:8px;overflow:hidden}
+.xpf{height:100%;background:linear-gradient(90deg,var(--green),var(--sun));border-radius:8px;width:68%;animation:xp 1.2s .4s ease-out backwards}
+.xpn{font-family:var(--mono);font-size:.58rem;color:var(--green-d);font-weight:600}
+.mscroll{display:flex;gap:10px;padding:0 18px 10px;overflow-x:auto;scrollbar-width:none}
+.mscroll::-webkit-scrollbar{display:none}
+.mc{flex-shrink:0;width:150px;background:#fff;border-radius:20px;padding:13px 12px;border:2px solid var(--rule);cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.mc:hover{transform:translateY(-4px);box-shadow:0 8px 22px rgba(34,197,94,.15);border-color:var(--green)}
+.mc.urg{border-color:var(--sun-d)}.mc.done{opacity:.5}
+.mci{display:flex;justify-content:center;margin-bottom:7px}
+.mt{font-size:.76rem;font-weight:800;color:var(--text);line-height:1.25;margin-bottom:5px}
+.mp{font-family:var(--mono);font-size:.58rem;color:var(--green-d);margin-bottom:6px}
+.mtag{display:inline-block;font-family:var(--mono);font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;background:#f0fdf4;color:var(--muted);padding:2px 8px;border-radius:100px;border:1px solid var(--rule)}
+.mtag.u{background:#fef3c7;color:#92400e}
+.lmini{margin:0 18px 14px;background:#fff;border-radius:20px;border:2px solid var(--rule);padding:11px 13px}
+.lr{display:flex;align-items:center;gap:9px;padding:5px 0;border-bottom:1px solid var(--rule)}
+.lr:last-child{border-bottom:none}
+.lrank{font-family:var(--mono);font-size:.64rem;color:var(--muted);width:15px;text-align:center}
+.lrank.g{color:#f59e0b;font-weight:700}
+.lname{flex:1;font-size:.75rem;font-weight:800;color:var(--text)}
+.lpts{font-family:var(--mono);font-size:.61rem;color:var(--green-d)}
+.lpts.me{background:#f0fdf4;padding:2px 8px;border-radius:100px;font-weight:800}
+
+/* ═══════════ MISSION ═══════════ */
+#s1{background:var(--bg)}
+.mhbg{position:absolute;top:0;left:0;right:0;height:230px;background:linear-gradient(155deg,#f59e0b 0%,#fcd34d 60%,#86efac 100%);border-radius:0 0 32px 32px}
+.mbk{position:absolute;top:56px;left:18px;width:36px;height:36px;background:rgba(255,255,255,.85);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;cursor:pointer;border:none;backdrop-filter:blur(8px);z-index:10}
+.mbw{position:relative;z-index:1;text-align:center;padding:54px 20px 0}
+.mcat{font-family:var(--mono);font-size:.58rem;color:rgba(0,0,0,.38);letter-spacing:.14em;text-transform:uppercase;margin-top:7px}
+.mttl{font-size:1.28rem;font-weight:900;color:var(--text);line-height:1.2;margin-top:3px}
+.mbody{position:relative;z-index:1;padding:13px 17px 90px;flex:1;overflow-y:auto;scrollbar-width:none}
+.mbody::-webkit-scrollbar{display:none}
+.mdesc{background:#fff;border-radius:17px;padding:13px 15px;border:2px solid var(--rule);font-size:.78rem;color:#4b6a5a;line-height:1.7;margin-bottom:11px}
+.spanel{background:#fff;border-radius:17px;border:2px solid var(--rule);padding:13px 15px;margin-bottom:11px}
+.stitle{font-size:.66rem;font-weight:900;color:var(--text);letter-spacing:.06em;text-transform:uppercase;margin-bottom:11px}
+.sread{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.si{background:var(--bg);border-radius:12px;padding:10px 11px;border:1px solid var(--rule)}
+.sl{font-family:var(--mono);font-size:.54rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.sv{font-family:var(--mono);font-size:1.05rem;font-weight:700;color:var(--text)}
+.sv span{font-size:.56rem;font-weight:500;color:var(--muted)}
+.sbar2{height:3px;background:var(--rule);border-radius:3px;margin-top:5px;overflow:hidden}
+.sbf{height:100%;border-radius:3px}
+.steps{margin-bottom:11px}
+.step{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--rule);font-size:.76rem;color:#4b6a5a;line-height:1.5}
+.step:last-child{border-bottom:none}
+.sn{min-width:19px;height:19px;background:var(--green);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.58rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.sn.d{background:var(--muted)}
+.subbtn{width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:15px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.93rem;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(34,197,94,.35);display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .18s,box-shadow .18s}
+.subbtn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(34,197,94,.45)}
+.rpop{position:absolute;inset:0;z-index:200;background:rgba(0,0,0,.55);display:none;flex-direction:column;align-items:center;justify-content:center;backdrop-filter:blur(10px)}
+.rpop.on{display:flex}
+.rbox{background:#fff;border-radius:28px;padding:28px 24px;text-align:center;width:290px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:popin .4s cubic-bezier(.34,1.56,.64,1)}
+.rtitle{font-size:1.4rem;font-weight:900;color:var(--text);margin:12px 0 4px}
+.rpts{font-family:var(--mono);font-size:1rem;color:var(--green-d);font-weight:700}
+.rbadge{font-size:.73rem;color:var(--muted);margin-top:4px}
+.rcls{margin-top:16px;width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:13px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.87rem;font-weight:800;cursor:pointer}
+
+/* ═══════════ MAP ═══════════ */
+#s2{background:#e8f5e9}
+.mhdr{padding:54px 20px 11px;background:linear-gradient(180deg,#d1fae5 0%,transparent 100%)}
+.mhdr h2{font-size:1.22rem;font-weight:900;color:var(--text)}
+.mhdr p{font-size:.7rem;color:var(--muted);margin-top:2px}
+.mfr{display:flex;gap:7px;padding:0 18px 9px;overflow-x:auto;scrollbar-width:none}
+.mfr::-webkit-scrollbar{display:none}
+.fp{flex-shrink:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:.67rem;font-weight:800;padding:5px 13px;border-radius:100px;border:2px solid var(--rule);background:#fff;color:var(--muted);cursor:pointer;transition:all .18s}
+.fp.on{background:var(--green);border-color:var(--green);color:#fff}
+.mcanvas{margin:0 18px;height:260px;background:#c8e6c9;border-radius:20px;position:relative;overflow:hidden;border:2px solid #a5d6a7}
+.mcanvas::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.2) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.2) 1px,transparent 1px);background-size:38px 38px}
+.rh{position:absolute;left:0;right:0;height:5px;background:rgba(255,255,255,.5);border-radius:3px}
+.rv{position:absolute;top:0;bottom:0;width:5px;background:rgba(255,255,255,.5);border-radius:3px}
+.mpin{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;cursor:pointer}
+.pb{background:#fff;border-radius:10px;padding:4px 7px;font-size:.56rem;font-weight:800;color:var(--text);box-shadow:0 3px 10px rgba(0,0,0,.15);border:2px solid;white-space:nowrap}
+.pb.heat{border-color:#ef4444;color:#ef4444}.pb.good{border-color:var(--green);color:var(--green-d)}.pb.warn{border-color:var(--sun-d);color:#92400e}
+.pt{width:2px;height:8px;background:rgba(0,0,0,.2)}
+.pd{width:7px;height:7px;border-radius:50%;background:var(--green);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.2)}
+.pd.heat{background:#ef4444}.pd.warn{background:var(--sun-d)}
+.mleg{position:absolute;bottom:10px;right:10px;background:rgba(255,255,255,.9);border-radius:10px;padding:7px 10px;backdrop-filter:blur(8px)}
+.mli{display:flex;align-items:center;gap:5px;font-size:.55rem;font-weight:800;color:var(--text);margin-bottom:2px}
+.mli:last-child{margin:0}
+.mld{width:7px;height:7px;border-radius:50%}
+.sts{display:flex;gap:9px;padding:9px 18px 0;overflow-x:auto;scrollbar-width:none}
+.sts::-webkit-scrollbar{display:none}
+.stc{flex-shrink:0;width:152px;background:#fff;border-radius:17px;padding:11px 12px;border:2px solid var(--rule)}
+.sth{display:flex;align-items:center;gap:5px;margin-bottom:8px}
+.std{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.std.heat{background:#ef4444}.std.warn{background:var(--sun-d)}
+.stn{font-size:.68rem;font-weight:800;color:var(--text)}
+.stm{display:flex;gap:6px;flex-wrap:wrap}
+.stme{font-family:var(--mono);font-size:.54rem;color:var(--muted)}
+.stme strong{font-size:.74rem;color:var(--text);display:block}
+.stk{display:flex;align-items:center;gap:5px;font-size:.59rem;color:var(--muted);margin-top:5px}
+
+/* ═══════════ BOT ═══════════ */
+#s3{background:linear-gradient(180deg,#0f172a 0%,#1e293b 100%)}
+.bth{padding:54px 20px 11px;display:flex;align-items:center;gap:11px}
+.btav{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#38bdf8,#22c55e);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(56,189,248,.4);animation:pulse 2s ease-in-out infinite;overflow:hidden}
+.bti h2{font-size:1.03rem;font-weight:900;color:#fff}
+.bti p{font-size:.64rem;color:rgba(255,255,255,.38)}
+.bts{display:flex;align-items:center;gap:4px;font-size:.58rem;color:#4ade80;margin-left:auto;font-family:var(--mono)}
+.bts::before{content:'';width:5px;height:5px;background:#4ade80;border-radius:50%;animation:blink 1.5s ease-in-out infinite}
+.chat{flex:1;overflow-y:auto;padding:4px 14px 16px;display:flex;flex-direction:column;gap:8px;scrollbar-width:none;padding-bottom:80px}
+.chat::-webkit-scrollbar{display:none}
+.msg{max-width:80%;animation:msg .3s ease}
+.msg.b{align-self:flex-start}.msg.u{align-self:flex-end}
+.mb{padding:10px 13px;border-radius:17px;font-size:.77rem;line-height:1.55;font-weight:600}
+.msg.b .mb{background:rgba(255,255,255,.08);color:rgba(255,255,255,.9);border-radius:4px 17px 17px 17px;border:1px solid rgba(255,255,255,.1)}
+.msg.u .mb{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-radius:17px 17px 4px 17px}
+.mt2{font-family:var(--mono);font-size:.5rem;color:rgba(255,255,255,.22);margin-top:3px;padding:0 3px}
+.msg.u .mt2{text-align:right}
+.qrs{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px;margin-bottom:7px}
+.qr{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.72);padding:6px 11px;border-radius:100px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.64rem;font-weight:700;cursor:pointer;transition:all .18s}
+.qr:hover{background:rgba(255,255,255,.14);color:#fff}
+.cinrow{position:absolute;bottom:80px;left:0;right:0;display:flex;gap:8px;align-items:center;padding:9px 14px;background:rgba(15,23,42,.96);border-top:1px solid rgba(255,255,255,.07);backdrop-filter:blur(12px)}
+.cin{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:100px;padding:9px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.77rem;color:#fff;outline:none}
+.cin::placeholder{color:rgba(255,255,255,.28)}
+.csend{width:36px;height:36px;background:var(--green);border:none;border-radius:50%;cursor:pointer;font-size:.88rem;display:flex;align-items:center;justify-content:center;transition:transform .18s}
+.csend:hover{transform:scale(1.1)}
+
+/* ═══════════ PROFILE ═══════════ */
+#s4{background:var(--bg)}
+.phdr{background:linear-gradient(155deg,var(--green-dk) 0%,#15803d 100%);padding:54px 20px 20px;text-align:center}
+.pavw{display:flex;justify-content:center;margin-bottom:9px}
+.pname{font-size:1.22rem;font-weight:900;color:#fff}
+.plvl{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.24);border-radius:100px;padding:3px 13px;font-family:var(--mono);font-size:.58rem;color:rgba(255,255,255,.9);margin-top:4px;letter-spacing:.1em;text-transform:uppercase}
+.lvd{width:5px;height:5px;border-radius:50%;background:var(--sun)}
+.pstats{display:flex;justify-content:space-around;margin-top:13px}
+.psc{text-align:center}
+.psc .n{font-size:1.32rem;font-weight:900;color:#fff;line-height:1}
+.psc .l{font-family:var(--mono);font-size:.54rem;color:rgba(255,255,255,.48);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.pbody{flex:1;overflow-y:auto;padding:13px 17px 90px;scrollbar-width:none}
+.pbody::-webkit-scrollbar{display:none}
+.bgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:13px}
+.bi{background:#fff;border-radius:14px;padding:10px 6px;text-align:center;border:2px solid var(--rule);transition:transform .18s,border-color .18s;cursor:pointer}
+.bi:hover{transform:scale(1.06);border-color:var(--green)}
+.bi.lk{opacity:.3;filter:grayscale(1)}
+.bicn{display:flex;justify-content:center;margin-bottom:3px}
+.bnm{font-family:var(--mono);font-size:.48rem;color:var(--muted)}
+.icard{background:linear-gradient(135deg,#14532d,#166534);border-radius:17px;padding:15px 15px;margin-bottom:11px;display:flex;align-items:center;gap:11px}
+.iico{flex-shrink:0}
+.itxt h4{font-size:.86rem;font-weight:900;color:#fff}
+.itxt p{font-size:.68rem;color:rgba(255,255,255,.58);margin-top:2px}
+.inum{margin-left:auto;font-family:var(--mono);font-size:1.5rem;font-weight:700;color:var(--leaf)}
+.hi{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--rule)}
+.hi:last-child{border-bottom:none}
+.hiico{width:34px;height:34px;background:var(--bg);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--rule);overflow:hidden}
+.hitt{font-size:.76rem;font-weight:800;color:var(--text)}
+.hidt{font-family:var(--mono);font-size:.56rem;color:var(--muted)}
+.hipt{margin-left:auto;font-family:var(--mono);font-size:.68rem;color:var(--green-d);font-weight:700}
+
+/* ═══════════════════════════════════════════
+   SCREEN 5 — GAME (bilingual educational)
+═══════════════════════════════════════════ */
+#s5{background:#0f172a}
+.gscr{flex:1;overflow-y:auto;scrollbar-width:none;padding:54px 0 84px}
+.gscr::-webkit-scrollbar{display:none}
+
+/* game top bar */
+.gtop{position:absolute;top:50px;left:0;right:0;z-index:20;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid rgba(255,255,255,.08)}
+.glang{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:.65rem;font-weight:800;padding:4px 12px;border-radius:100px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .18s}
+.glang:hover{background:rgba(255,255,255,.2)}
+.glang.pt{background:#22c55e;border-color:#22c55e}
+.glang.en{background:#38bdf8;border-color:#38bdf8}
+.gscore{font-family:var(--mono);font-size:.62rem;color:#fcd34d;font-weight:700}
+.glives{display:flex;gap:3px}
+.glive{font-size:.85rem}
+
+/* game lobby */
+.globby{padding:16px 16px 0;animation:fadeIn .4s ease}
+.gltitle{text-align:center;margin-bottom:16px}
+.gltitle h2{font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:4px}
+.gltitle p{font-size:.75rem;color:rgba(255,255,255,.5);font-family:var(--mono)}
+.glvls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.glvl{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:18px;padding:16px 14px;cursor:pointer;transition:all .2s;text-align:center}
+.glvl:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);transform:translateY(-3px)}
+.glvl.locked{opacity:.35;cursor:not-allowed}
+.glvl-ico{font-size:2rem;margin-bottom:8px;display:block}
+.glvl-name{font-size:.8rem;font-weight:800;color:#fff;margin-bottom:3px}
+.glvl-sub{font-size:.62rem;color:rgba(255,255,255,.45);font-family:var(--mono)}
+.glvl.done{border-color:#22c55e}
+.glvl.done .glvl-name{color:#86efac}
+.glvl-badge{font-size:.52rem;font-family:var(--mono);background:#22c55e;color:#fff;padding:2px 8px;border-radius:100px;display:inline-block;margin-top:6px}
+
+/* quiz game */
+.gquiz{padding:12px 16px 0;animation:fadeIn .35s ease}
+.gq-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.gq-prog{font-family:var(--mono);font-size:.58rem;color:rgba(255,255,255,.4)}
+.gq-progbar{height:4px;background:rgba(255,255,255,.1);border-radius:4px;margin-bottom:14px;overflow:hidden}
+.gq-progfill{height:100%;background:linear-gradient(90deg,#22c55e,#38bdf8);border-radius:4px;transition:width .4s ease}
+.gq-card{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:20px;padding:18px 16px;margin-bottom:14px}
+.gq-ico{text-align:center;font-size:2.8rem;margin-bottom:10px;display:block}
+.gq-q{font-size:.88rem;font-weight:700;color:#fff;line-height:1.45;text-align:center}
+.gq-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.gq-opt{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:13px;padding:11px 10px;font-size:.74rem;font-weight:700;color:rgba(255,255,255,.85);cursor:pointer;transition:all .18s;text-align:center;font-family:'Plus Jakarta Sans',sans-serif}
+.gq-opt:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.3)}
+.gq-opt.correct{background:rgba(34,197,94,.25);border-color:#22c55e;color:#86efac;animation:correct .4s ease}
+.gq-opt.wrong{background:rgba(239,68,68,.2);border-color:#ef4444;color:#fca5a5;animation:wrong .4s ease}
+.gq-opt.disabled{pointer-events:none}
+.gq-feedback{margin-top:10px;padding:10px 14px;border-radius:13px;font-size:.75rem;line-height:1.5;font-weight:600;display:none}
+.gq-feedback.show{display:block;animation:fadeIn .3s ease}
+.gq-feedback.ok{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.3)}
+.gq-feedback.err{background:rgba(239,68,68,.12);color:#fca5a5;border:1px solid rgba(239,68,68,.25)}
+.gq-next{width:100%;padding:13px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:13px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;font-weight:800;cursor:pointer;margin-top:10px;display:none;transition:transform .18s}
+.gq-next:hover{transform:translateY(-2px)}
+.gq-next.show{display:block;animation:fadeIn .3s .1s ease backwards}
+
+/* builder game */
+.gbuilder{padding:12px 16px 0;animation:fadeIn .35s ease}
+.gbuild-scene{background:linear-gradient(180deg,#1e3a5f 0%,#2d6a4f 100%);border-radius:18px;height:160px;position:relative;margin-bottom:12px;overflow:hidden;border:2px solid rgba(255,255,255,.1)}
+.gbuild-sky{position:absolute;top:0;left:0;right:0;height:70%;background:linear-gradient(180deg,#0ea5e9 0%,#7dd3fc 100%)}
+.gbuild-ground{position:absolute;bottom:0;left:0;right:0;height:35%;background:#16a34a}
+.gbuild-items{position:absolute;inset:0;display:flex;align-items:flex-end;padding:8px;gap:6px;flex-wrap:wrap}
+.gbuild-item{font-size:1.6rem;cursor:pointer;transition:transform .2s;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))}
+.gbuild-item:hover{transform:scale(1.2)}
+.gbuild-item.placed{animation:fadeIn .3s ease}
+.gtools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.gtool{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 10px;font-size:1.2rem;cursor:pointer;transition:all .18s;position:relative}
+.gtool:hover{background:rgba(255,255,255,.15);transform:scale(1.05)}
+.gtool.good{border-color:#22c55e}
+.gtool.bad{border-color:#ef4444}
+.gtool-lbl{font-size:.5rem;font-family:var(--mono);color:rgba(255,255,255,.5);display:block;text-align:center;margin-top:2px}
+.gbuild-score{text-align:center;background:rgba(255,255,255,.06);border-radius:13px;padding:10px;margin-bottom:12px}
+.gbuild-score span{font-family:var(--mono);font-size:.7rem;color:rgba(255,255,255,.5)}
+.gbuild-score strong{font-family:var(--mono);font-size:1.1rem;color:#fcd34d;display:block;margin-top:2px}
+
+/* crisis game */
+.gcrisis{padding:12px 16px 0;animation:fadeIn .35s ease}
+.gcrisis-hd{text-align:center;margin-bottom:12px}
+.gcrisis-ico{font-size:3rem;display:block;margin-bottom:6px;animation:fl 2s ease-in-out infinite}
+.gcrisis-title{font-size:1rem;font-weight:900;color:#fff}
+.gcrisis-sub{font-size:.66rem;color:rgba(255,255,255,.45);font-family:var(--mono)}
+.gcrisis-bar{height:8px;background:rgba(255,255,255,.1);border-radius:8px;margin:10px 0;overflow:hidden}
+.gcrisis-barf{height:100%;border-radius:8px;transition:width .6s ease}
+.gcrisis-choices{display:flex;flex-direction:column;gap:8px}
+.gcrisis-ch{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 14px;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif}
+.gcrisis-ch:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.3)}
+.gcrisis-ch-ico{font-size:1.4rem;flex-shrink:0}
+.gcrisis-ch-txt{font-size:.76rem;font-weight:700;color:rgba(255,255,255,.85)}
+.gcrisis-ch.good{border-color:#22c55e;background:rgba(34,197,94,.12)}
+.gcrisis-ch.bad{border-color:#ef4444;background:rgba(239,68,68,.1)}
+.gcrisis-impact{font-size:.68rem;font-family:var(--mono);color:rgba(255,255,255,.4);margin-top:3px}
+
+/* results screen */
+.gresult{padding:20px 16px 0;text-align:center;animation:fadeIn .4s ease}
+.gresult-star{font-size:4rem;display:block;animation:fl 2s ease-in-out infinite}
+.gresult-title{font-size:1.4rem;font-weight:900;color:#fff;margin:10px 0 4px}
+.gresult-pts{font-family:var(--mono);font-size:1rem;color:#fcd34d;font-weight:700}
+.gresult-detail{font-size:.74rem;color:rgba(255,255,255,.5);margin-top:6px;font-family:var(--mono)}
+.gresult-btn{display:inline-block;margin-top:16px;padding:12px 28px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.87rem;font-weight:800;cursor:pointer;transition:transform .18s}
+.gresult-btn:hover{transform:translateY(-2px)}
+.gresult-badges{display:flex;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.grb{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 12px;text-align:center}
+.grb-ico{font-size:1.4rem;display:block}
+.grb-lbl{font-size:.52rem;font-family:var(--mono);color:rgba(255,255,255,.45);margin-top:3px}
+
+/* demo bar */
+.dbar{width:390px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:15px;padding:10px 17px;margin-top:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.dl{font-family:var(--mono);font-size:.6rem;color:rgba(255,255,255,.3);letter-spacing:.12em;text-transform:uppercase}
+.dn{display:flex;gap:5px}
+.dn button{font-family:'Plus Jakarta Sans',sans-serif;font-size:.67rem;font-weight:800;padding:5px 10px;border-radius:100px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:rgba(255,255,255,.52);cursor:pointer;transition:all .18s}
+.dn button:hover,.dn button.on{background:var(--green);border-color:var(--green);color:#fff}
+.dn button.gon{background:#7c3aed;border-color:#7c3aed;color:#fff}
+</style>
+</head>
+<body>
+
+<!-- ═══ SVG CHARACTERS (inline) ═══ -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<symbol id="amara" viewBox="0 0 100 120">
+  <ellipse cx="50" cy="115" rx="24" ry="5" fill="rgba(0,0,0,.12)"/>
+  <rect x="26" y="68" width="48" height="36" rx="12" fill="#6ee7b7"/>
+  <line x1="50" y1="68" x2="50" y2="104" stroke="#34d399" stroke-width="1.5" stroke-linecap="round"/>
+  <rect x="36" y="82" width="28" height="14" rx="6" fill="#34d399"/>
+  <path d="M40 82 Q50 86 60 82" stroke="#6ee7b7" stroke-width="1.2" fill="none"/>
+  <path d="M26 76 Q14 80 12 92 Q12 98 18 96" stroke="#6ee7b7" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M74 76 Q86 80 88 92 Q88 98 82 96" stroke="#6ee7b7" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <circle cx="14" cy="97" r="7" fill="#b07850"/>
+  <circle cx="86" cy="97" r="7" fill="#b07850"/>
+  <rect x="80" y="90" width="13" height="20" rx="3" fill="#1e293b"/>
+  <rect x="81" y="91" width="11" height="15" rx="2" fill="#38bdf8" opacity=".6"/>
+  <rect x="44" y="58" width="12" height="12" rx="6" fill="#b07850"/>
+  <ellipse cx="50" cy="44" rx="22" ry="24" fill="#b07850"/>
+  <ellipse cx="50" cy="26" rx="26" ry="18" fill="#1a0a02"/>
+  <ellipse cx="50" cy="22" rx="23" ry="15" fill="#2d1505"/>
+  <circle cx="35" cy="20" r="5" fill="#1a0a02"/><circle cx="42" cy="15" r="6" fill="#1a0a02"/><circle cx="50" cy="13" r="7" fill="#1a0a02"/><circle cx="58" cy="15" r="6" fill="#1a0a02"/><circle cx="65" cy="20" r="5" fill="#1a0a02"/>
+  <path d="M28 32 Q50 24 72 32" stroke="#fcd34d" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <rect x="30" y="31" width="40" height="10" rx="5" fill="#0ea5e9" opacity=".85"/>
+  <circle cx="40" cy="36" r="3.5" fill="rgba(255,255,255,.4)"/><circle cx="60" cy="36" r="3.5" fill="rgba(255,255,255,.4)"/>
+  <ellipse cx="40" cy="50" rx="6" ry="7" fill="#fff"/><ellipse cx="40" cy="51" rx="4.5" ry="5.2" fill="#1a0800"/>
+  <circle cx="42" cy="48.5" r="1.6" fill="#fff"/>
+  <ellipse cx="60" cy="50" rx="6" ry="7" fill="#fff"/><ellipse cx="60" cy="51" rx="4.5" ry="5.2" fill="#1a0800"/>
+  <circle cx="62" cy="48.5" r="1.6" fill="#fff"/>
+  <path d="M34 43 Q40 39.5 46 42" stroke="#1a0a02" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <path d="M54 42 Q60 39.5 66 43" stroke="#1a0a02" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <path d="M38 62 Q50 70 62 62" stroke="#7c3820" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="32" cy="57" rx="5" ry="3.5" fill="#f97316" opacity=".25"/><ellipse cx="68" cy="57" rx="5" ry="3.5" fill="#f97316" opacity=".25"/>
+  <circle cx="28" cy="50" r="3.5" stroke="#fcd34d" stroke-width="2" fill="none"/>
+  <circle cx="72" cy="50" r="3.5" stroke="#fcd34d" stroke-width="2" fill="none"/>
+</symbol>
+<symbol id="tomas" viewBox="0 0 100 120">
+  <ellipse cx="50" cy="115" rx="24" ry="5" fill="rgba(0,0,0,.12)"/>
+  <rect x="22" y="65" width="56" height="40" rx="14" fill="#1d4ed8"/>
+  <text x="38" y="90" font-family="sans-serif" font-size="18" font-weight="900" fill="rgba(255,255,255,.2)">9</text>
+  <path d="M22 72 Q10 77 9 90 Q9 96 15 95" stroke="#1d4ed8" stroke-width="11" fill="none" stroke-linecap="round"/>
+  <path d="M78 72 Q90 77 91 90 Q91 96 85 95" stroke="#1d4ed8" stroke-width="11" fill="none" stroke-linecap="round"/>
+  <circle cx="11" cy="96" r="7.5" fill="#8b5e3c"/><circle cx="89" cy="96" r="7.5" fill="#8b5e3c"/>
+  <rect x="43" y="56" width="14" height="12" rx="7" fill="#8b5e3c"/>
+  <ellipse cx="50" cy="41" rx="23" ry="24" fill="#8b5e3c"/>
+  <ellipse cx="50" cy="22" rx="22" ry="12" fill="#1a0a02"/>
+  <rect x="28" y="22" width="44" height="10" fill="#1a0a02"/>
+  <path d="M28 32 L32 29 L36 32 L40 29 L44 32 L48 29 L52 32 L56 29 L60 32 L64 29 L68 32 L72 32" stroke="#2d1505" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="40" cy="46" rx="6.5" ry="7.5" fill="#fff"/><ellipse cx="40" cy="47" rx="5" ry="5.8" fill="#1a0800"/>
+  <circle cx="42.5" cy="44.5" r="1.8" fill="#fff"/>
+  <ellipse cx="60" cy="46" rx="6.5" ry="7.5" fill="#fff"/><ellipse cx="60" cy="47" rx="5" ry="5.8" fill="#1a0800"/>
+  <circle cx="62.5" cy="44.5" r="1.8" fill="#fff"/>
+  <path d="M34 39 Q40 36 46 38" stroke="#1a0a02" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <path d="M54 38 Q60 36 66 39" stroke="#1a0a02" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <path d="M40 63 Q50 69 60 63" stroke="#6b3a1a" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="30" cy="54" rx="5.5" ry="3.5" fill="#f97316" opacity=".2"/><ellipse cx="70" cy="54" rx="5.5" ry="3.5" fill="#f97316" opacity=".2"/>
+  <path d="M28 38 Q28 20 50 18 Q72 20 72 38" stroke="#0f172a" stroke-width="3.5" fill="none"/>
+  <rect x="22" y="36" width="10" height="8" rx="4" fill="#0f172a"/><rect x="68" y="36" width="10" height="8" rx="4" fill="#0f172a"/>
+  <rect x="23" y="37" width="8" height="6" rx="3" fill="#334155"/>
+</symbol>
+<symbol id="boto" viewBox="0 0 100 120">
+  <ellipse cx="50" cy="115" rx="26" ry="5" fill="rgba(0,0,0,.15)"/>
+  <rect x="33" y="96" width="14" height="18" rx="7" fill="#1e293b"/><rect x="53" y="96" width="14" height="18" rx="7" fill="#1e293b"/>
+  <rect x="29" y="110" width="22" height="7" rx="3.5" fill="#0f172a"/><rect x="49" y="110" width="22" height="7" rx="3.5" fill="#0f172a"/>
+  <rect x="20" y="54" width="60" height="46" rx="16" fill="#1e293b"/>
+  <rect x="28" y="62" width="44" height="26" rx="8" fill="#0ea5e9" opacity=".2"/>
+  <circle cx="38" cy="75" r="5" fill="#22c55e"/><circle cx="38" cy="75" r="2.5" fill="#4ade80"/>
+  <circle cx="50" cy="75" r="5" fill="#f59e0b"/><circle cx="50" cy="75" r="2.5" fill="#fcd34d"/>
+  <circle cx="62" cy="75" r="5" fill="#38bdf8"/><circle cx="62" cy="75" r="2.5" fill="#7dd3fc"/>
+  <path d="M30 85 Q34 82 38 85 Q42 88 46 85 Q50 82 54 85 Q58 88 62 85 Q66 82 70 85" stroke="#38bdf8" stroke-width="1.5" fill="none" opacity=".7"/>
+  <rect x="4" y="58" width="16" height="10" rx="5" fill="#1e293b"/><rect x="80" y="58" width="16" height="10" rx="5" fill="#1e293b"/>
+  <rect x="18" y="16" width="64" height="42" rx="18" fill="#1e293b"/>
+  <rect x="20" y="18" width="60" height="20" rx="14" fill="rgba(56,189,248,.12)"/>
+  <rect x="47" y="6" width="6" height="12" rx="3" fill="#334155"/>
+  <circle cx="50" cy="5" r="5.5" fill="#38bdf8"/><circle cx="50" cy="5" r="3" fill="#fff" opacity=".8"/>
+  <rect x="22" y="21" width="56" height="28" rx="10" fill="#0ea5e9" opacity=".88"/>
+  <circle cx="37" cy="35" r="9" fill="#22c55e"/><circle cx="37" cy="35" r="5.5" fill="#fff"/><circle cx="37" cy="35" r="3" fill="#0f172a"/><circle cx="39.5" cy="32.5" r="1.3" fill="#fff"/>
+  <circle cx="63" cy="35" r="9" fill="#22c55e"/><circle cx="63" cy="35" r="5.5" fill="#fff"/><circle cx="63" cy="35" r="3" fill="#0f172a"/><circle cx="65.5" cy="32.5" r="1.3" fill="#fff"/>
+  <rect x="28" y="45" width="44" height="7" rx="3.5" fill="#0f172a"/>
+  <circle cx="34" cy="48.5" r="1.8" fill="#22c55e"/><circle cx="40" cy="48.5" r="1.8" fill="#22c55e"/>
+  <circle cx="46" cy="46.5" r="1.8" fill="#22c55e"/><circle cx="52" cy="46.5" r="1.8" fill="#22c55e"/>
+  <circle cx="58" cy="48.5" r="1.8" fill="#22c55e"/><circle cx="64" cy="48.5" r="1.8" fill="#22c55e"/>
+</symbol>
+<symbol id="sundude" viewBox="0 0 80 80">
+  <g stroke="white" stroke-width="3" stroke-linecap="round" opacity=".7">
+    <line x1="40" y1="4" x2="40" y2="12"/><line x1="40" y1="68" x2="40" y2="76"/><line x1="4" y1="40" x2="12" y2="40"/><line x1="68" y1="40" x2="76" y2="40"/>
+    <line x1="13" y1="13" x2="19" y2="19"/><line x1="61" y1="61" x2="67" y2="67"/><line x1="67" y1="13" x2="61" y2="19"/><line x1="19" y1="61" x2="13" y2="67"/>
+  </g>
+  <circle cx="40" cy="40" r="26" fill="#fcd34d"/><circle cx="40" cy="40" r="23" fill="#fbbf24"/>
+  <rect x="20" y="36" width="16" height="11" rx="5" fill="#1e293b"/><rect x="44" y="36" width="16" height="11" rx="5" fill="#1e293b"/>
+  <rect x="36" y="38" width="8" height="4" rx="2" fill="#334155"/>
+  <line x1="20" y1="39" x2="14" y2="36" stroke="#374151" stroke-width="2.2" stroke-linecap="round"/><line x1="60" y1="39" x2="66" y2="36" stroke="#374151" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M28 53 Q40 62 52 53" stroke="#92400e" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+  <circle cx="24" cy="50" r="5" fill="#f97316" opacity=".38"/><circle cx="56" cy="50" r="5" fill="#f97316" opacity=".38"/>
+</symbol>
+<symbol id="sensorbot" viewBox="0 0 60 70">
+  <path d="M30 6 Q40 9 43 18" stroke="#22c55e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M30 2 Q44 6 48 20" stroke="#22c55e" stroke-width="2" fill="none" stroke-linecap="round" opacity=".5"/>
+  <rect x="10" y="12" width="40" height="30" rx="10" fill="#0f172a"/>
+  <circle cx="22" cy="27" r="5.5" fill="#22c55e"/><circle cx="22" cy="27" r="3" fill="#fff"/><circle cx="22.8" cy="26" r="1.3" fill="#0f172a"/>
+  <circle cx="38" cy="27" r="5.5" fill="#22c55e"/><circle cx="38" cy="27" r="3" fill="#fff"/><circle cx="38.8" cy="26" r="1.3" fill="#0f172a"/>
+  <rect x="17" y="35" width="26" height="4.5" rx="2.2" fill="#38bdf8"/>
+  <rect x="14" y="44" width="32" height="18" rx="7" fill="#1e293b"/>
+  <circle cx="23" cy="53" r="3.5" fill="#22c55e"/><circle cx="30" cy="53" r="3.5" fill="#f59e0b"/><circle cx="37" cy="53" r="3.5" fill="#38bdf8"/>
+  <rect x="17" y="62" width="9" height="8" rx="4" fill="#0f172a"/><rect x="34" y="62" width="9" height="8" rx="4" fill="#0f172a"/>
+</symbol>
+<symbol id="raindrop" viewBox="0 0 56 68">
+  <path d="M28 5 Q44 24 44 40 Q44 56 28 60 Q12 56 12 40 Q12 24 28 5Z" fill="#38bdf8"/>
+  <path d="M28 5 Q44 24 44 40 Q44 56 28 60Z" fill="#0ea5e9"/>
+  <path d="M17 22 Q21 15 27 20" stroke="rgba(255,255,255,.6)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="22" cy="38" rx="4" ry="4.5" fill="#fff"/><ellipse cx="22" cy="38.5" rx="2.8" ry="3.2" fill="#0f172a"/>
+  <ellipse cx="34" cy="38" rx="4" ry="4.5" fill="#fff"/><ellipse cx="34" cy="38.5" rx="2.8" ry="3.2" fill="#0f172a"/>
+  <path d="M21 47 Q28 53 35 47" stroke="#0369a1" stroke-width="2" fill="none" stroke-linecap="round"/>
+</symbol>
+<symbol id="windkid" viewBox="0 0 70 56">
+  <path d="M4 20 Q18 11 32 20 Q46 29 60 20 Q66 16 70 20" stroke="#94a3b8" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M4 32 Q18 23 32 32 Q46 41 60 32 Q66 28 70 32" stroke="#cbd5e1" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <circle cx="36" cy="18" r="13" fill="#e2e8f0"/><circle cx="36" cy="18" r="11" fill="#f1f5f9"/>
+  <circle cx="28" cy="21" r="4" fill="#fb7185" opacity=".38"/><circle cx="44" cy="21" r="4" fill="#fb7185" opacity=".38"/>
+  <ellipse cx="31" cy="17" rx="2.8" ry="3.1" fill="#334155"/><ellipse cx="41" cy="17" rx="2.8" ry="3.1" fill="#334155"/>
+  <path d="M31 23 Q36 27 41 23" stroke="#475569" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+</symbol>
+<symbol id="trophy" viewBox="0 0 60 72">
+  <path d="M13 15 Q5 22 8 33 Q10 40 18 37" stroke="#f59e0b" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M47 15 Q55 22 52 33 Q50 40 42 37" stroke="#f59e0b" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M13 9 Q13 38 30 43 Q47 38 47 9Z" fill="#fbbf24"/>
+  <path d="M18 9 Q18 36 30 41 Q30 41 30 9Z" fill="#fcd34d"/>
+  <rect x="22" y="43" width="16" height="7" rx="3" fill="#f59e0b"/>
+  <rect x="16" y="50" width="28" height="6" rx="3" fill="#f59e0b"/>
+  <rect x="12" y="56" width="36" height="7" rx="3" fill="#d97706"/>
+  <ellipse cx="24" cy="26" rx="3.2" ry="3.5" fill="#1a0a00"/><circle cx="25.5" cy="24.2" r="1.2" fill="#fff"/>
+  <ellipse cx="36" cy="26" rx="3.2" ry="3.5" fill="#1a0a00"/><circle cx="37.5" cy="24.2" r="1.2" fill="#fff"/>
+  <path d="M24 33 Q30 38 36 33" stroke="#92400e" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <text x="24" y="17" font-size="12" fill="#d97706">★</text>
+</symbol>
+<symbol id="mappin" viewBox="0 0 50 65">
+  <path d="M25 4 Q42 4 42 22 Q42 38 25 62 Q8 38 8 22 Q8 4 25 4Z" fill="#22c55e"/>
+  <path d="M25 4 Q42 4 42 22 Q42 38 25 62Z" fill="#16a34a"/>
+  <circle cx="25" cy="22" r="13" fill="#fff"/>
+  <ellipse cx="20" cy="21" rx="2.8" ry="3" fill="#0f172a"/><ellipse cx="30" cy="21" rx="2.8" ry="3" fill="#0f172a"/>
+  <path d="M20 27 Q25 31 30 27" stroke="#0f172a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+</symbol>
+<symbol id="leaf" viewBox="0 0 60 65">
+  <path d="M30 6 Q50 11 55 30 Q50 52 30 58 Q10 52 5 30 Q10 11 30 6Z" fill="#22c55e"/>
+  <path d="M30 6 Q50 11 55 30 Q50 52 30 58Z" fill="#16a34a"/>
+  <line x1="30" y1="10" x2="30" y2="55" stroke="rgba(255,255,255,.38)" stroke-width="2.5" stroke-linecap="round"/>
+  <ellipse cx="25" cy="29" rx="3.2" ry="3.5" fill="#0f172a"/><ellipse cx="35" cy="29" rx="3.2" ry="3.5" fill="#0f172a"/>
+  <path d="M25 37 Q30 41 35 37" stroke="#0f172a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+</symbol>
+<symbol id="tree" viewBox="0 0 66 80">
+  <rect x="28" y="52" width="10" height="26" rx="4" fill="#92400e"/>
+  <ellipse cx="33" cy="46" rx="24" ry="16" fill="#16a34a"/>
+  <ellipse cx="33" cy="36" rx="20" ry="15" fill="#22c55e"/>
+  <ellipse cx="33" cy="25" rx="16" ry="14" fill="#4ade80"/>
+  <ellipse cx="28" cy="28" rx="2.8" ry="3" fill="#0f172a"/><ellipse cx="38" cy="28" rx="2.8" ry="3" fill="#0f172a"/>
+  <path d="M28 34 Q33 38 38 34" stroke="#0f172a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+</symbol>
+<symbol id="flame" viewBox="0 0 48 58">
+  <path d="M24 4 Q33 16 30 24 Q35 19 34 10 Q42 22 40 35 Q37 46 24 52 Q11 46 10 35 Q8 22 16 10 Q16 19 24 4Z" fill="#f97316"/>
+  <path d="M24 4 Q33 16 30 24 Q35 19 34 10 Q42 22 40 35 Q37 46 24 52Z" fill="#ef4444"/>
+  <path d="M24 24 Q29 30 27 38 Q24 43 20 41 Q15 38 17 30 Q19 22 24 24Z" fill="#fbbf24"/>
+  <ellipse cx="20" cy="36" rx="2.5" ry="2.8" fill="#7c2d12"/><ellipse cx="28" cy="36" rx="2.5" ry="2.8" fill="#7c2d12"/>
+  <path d="M20 42 Q24 46 28 42" stroke="#7c2d12" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+</symbol>
+<!-- nav icons -->
+<symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></symbol>
+<symbol id="i-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="4"/><circle cx="9" cy="11" r="2"/><circle cx="15" cy="11" r="2"/><path d="M9 16h6"/><path d="M12 4v-2"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="i-game" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="18" cy="12" r="1" fill="currentColor" stroke="none"/></symbol>
+</defs>
+</svg>
+
+<!-- ═══ PAGE HEADER ═══ -->
+<div class="page-h">
+  <h1>Clima<em>Kids</em></h1>
+  <p>Plataforma Unificada · App + Jogo Bilingue · 2026</p>
+</div>
+
+<!-- ═══ PHONE ═══ -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen-wrap">
+    <div class="sbar" id="sbar"><span>9:41</span><div class="sicons"><span>●●●</span><span>WiFi</span><span>🔋</span></div></div>
+
+    <!-- ████ S0: HOME ████ -->
+    <div class="scr on" id="s0">
+      <div style="flex:1;overflow-y:auto;scrollbar-width:none;padding-bottom:86px">
+        <div class="htop">
+          <div class="hg"><span>Bom dia 👋</span><div class="hn">Mateus Nhantumbo</div></div>
+          <div class="havw">
+            <svg width="62" height="74" style="animation:fl 3.5s ease-in-out infinite"><use href="#amara"/></svg>
+            <div class="hlvl">Nível 4</div>
+          </div>
+        </div>
+        <div class="wcard">
+          <div class="wt">
+            <div><div class="wloc">📍 Maxixe, Inhambane</div><div class="wtemp">32<sup>°C</sup></div><div class="wdesc">Ensolarado · Sensação 35°C</div></div>
+            <svg width="72" height="72" style="animation:fl 4s ease-in-out infinite;filter:drop-shadow(0 4px 16px rgba(0,0,0,.13))"><use href="#sundude"/></svg>
+          </div>
+          <div class="wstats">
+            <div class="wstat"><svg width="20" height="24"><use href="#raindrop"/></svg>78%</div>
+            <div class="wstat"><svg width="26" height="20"><use href="#windkid"/></svg>12 km/h</div>
+            <div class="wstat">UV 8</div>
+          </div>
+        </div>
+        <div class="xpr">
+          <span class="xpl">Guardião Nv.4</span>
+          <div class="xpb"><div class="xpf"></div></div>
+          <span class="xpn">680/1000 XP</span>
+        </div>
+        <!-- game promo banner -->
+        <div onclick="go(5)" style="margin:10px 18px 0;background:linear-gradient(135deg,#4c1d95,#7c3aed);border-radius:18px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:0 6px 20px rgba(124,58,237,.3)">
+          <span style="font-size:2rem">🎮</span>
+          <div>
+            <div style="font-size:.82rem;font-weight:900;color:#fff" id="game-banner-title">Jogar ClimaKids</div>
+            <div style="font-family:var(--mono);font-size:.58rem;color:rgba(255,255,255,.55)" id="game-banner-sub">4 níveis · EN / PT · Quiz + Crise + Herói</div>
+          </div>
+          <div style="margin-left:auto;background:rgba(255,255,255,.15);border-radius:100px;padding:5px 12px;font-size:.68rem;font-weight:800;color:#c4b5fd" id="game-banner-btn">Jogar →</div>
+        </div>
+        <div class="sh"><h3>Missões de hoje</h3><button class="sa" onclick="go(1)">Ver todas →</button></div>
+        <div class="mscroll">
+          <div class="mc urg" onclick="go(1)"><div class="mci"><svg width="48" height="56" style="animation:fl 3s ease-in-out infinite"><use href="#sensorbot"/></svg></div><div class="mt">Mede a Temperatura à Sombra</div><div class="mp">+50 XP · +20 pts</div><span class="mtag u">⚡ urgente</span></div>
+          <div class="mc" onclick="go(1)"><div class="mci"><svg width="40" height="32" style="animation:fl 3.3s ease-in-out infinite"><use href="#windkid"/></svg></div><div class="mt">Regista a Qualidade do Ar</div><div class="mp">+40 XP · +15 pts</div><span class="mtag">sensor</span></div>
+          <div class="mc done"><div class="mci"><svg width="38" height="48"><use href="#raindrop"/></svg></div><div class="mt">Medição de Chuva Matinal</div><div class="mp">✅ Concluída</div><span class="mtag">feito</span></div>
+          <div class="mc" onclick="go(1)"><div class="mci"><svg width="36" height="46" style="animation:fl 2.8s ease-in-out infinite"><use href="#mappin"/></svg></div><div class="mt">Observa o Nível do Rio</div><div class="mp">+60 XP · +25 pts</div><span class="mtag">campo</span></div>
+        </div>
+        <div class="sh"><h3>Ranking da Turma</h3><button class="sa">Top 10 →</button></div>
+        <div class="lmini">
+          <div class="lr"><div class="lrank g">1</div><svg width="24" height="28"><use href="#amara"/></svg><div class="lname">Ana Mabjaia</div><div class="lpts">1.240 pts</div></div>
+          <div class="lr"><div class="lrank">2</div><svg width="24" height="28"><use href="#tomas"/></svg><div class="lname">Paulo Cossa</div><div class="lpts">980 pts</div></div>
+          <div class="lr" style="background:#f0fdf4;border-radius:10px;padding:5px 6px"><div class="lrank" style="color:var(--green-d);font-weight:800">3</div><svg width="24" height="28"><use href="#tomas"/></svg><div class="lname" style="color:var(--green-dk)">Tu · Mateus</div><div class="lpts me">680 pts</div></div>
+          <div class="lr"><div class="lrank">4</div><svg width="24" height="28"><use href="#amara"/></svg><div class="lname">Sofia Bila</div><div class="lpts">540 pts</div></div>
+        </div>
+      </div>
+      <div class="bnav">
+        <button class="nb on" onclick="go(0)"><svg><use href="#i-home"/></svg><span id="ln0">Início</span></button>
+        <button class="nb" onclick="go(1)"><svg><use href="#i-target"/></svg><span id="ln1">Missões</span></button>
+        <button class="nb" onclick="go(2)"><svg><use href="#i-map"/></svg><span id="ln2">Mapa</span></button>
+        <button class="nb" onclick="go(3)"><svg><use href="#i-bot"/></svg><span id="ln3">ClimaBOT</span></button>
+        <button class="nb" onclick="go(4)"><svg><use href="#i-user"/></svg><span id="ln4">Perfil</span></button>
+        <button class="nb game" onclick="go(5)"><svg><use href="#i-game"/></svg><span id="ln5">Jogar</span></button>
+      </div>
+    </div>
+
+    <!-- ████ S1: MISSION ████ -->
+    <div class="scr" id="s1">
+      <div class="mhbg"></div>
+      <button class="mbk" onclick="go(0)">←</button>
+      <div class="mbw">
+        <svg width="100" height="116" style="animation:fl 3.5s ease-in-out infinite;filter:drop-shadow(0 8px 22px rgba(0,0,0,.15))"><use href="#sensorbot"/></svg>
+        <div class="mcat" id="mcat-lbl">Missão de Temperatura · +50 XP</div>
+        <h2 class="mttl" id="mttl-lbl">Mede a Temperatura<br>à Sombra</h2>
+      </div>
+      <div class="mbody">
+        <div class="mdesc" id="mdesc-lbl">Vai a um lugar com sombra natural e mede a temperatura durante 3 minutos. Compara com a temperatura ao sol para identificar <strong>ilhas de calor urbanas</strong> no teu bairro.</div>
+        <div style="background:#fff;border-radius:17px;border:2px solid var(--rule);padding:13px 15px;margin-bottom:11px">
+          <div class="stitle" id="steps-lbl">Passos da Missão</div>
+          <div class="steps">
+            <div class="step"><div class="sn d">✓</div><span id="step1">Vai para um local com sombra natural</span></div>
+            <div class="step"><div class="sn d">✓</div><span id="step2">Liga o sensor via Bluetooth</span></div>
+            <div class="step"><div class="sn">3</div><span id="step3">Aguarda 3 minutos de leitura estável</span></div>
+            <div class="step"><div class="sn">4</div><span id="step4">Confirma e envia para o mapa</span></div>
+          </div>
+        </div>
+        <div class="spanel">
+          <div class="stitle" id="readings-lbl">Leituras em Tempo Real</div>
+          <div class="sread">
+            <div class="si"><div class="sl">Temperatura</div><div class="sv" id="tv">28.4 <span>°C</span></div><div class="sbar2"><div class="sbf" style="width:58%;background:var(--sun)"></div></div></div>
+            <div class="si"><div class="sl" id="hum-lbl">Humidade</div><div class="sv">78 <span>%</span></div><div class="sbar2"><div class="sbf" style="width:78%;background:var(--sky)"></div></div></div>
+            <div class="si"><div class="sl">UV Index</div><div class="sv" style="color:#ef4444">8.2 <span>/11</span></div><div class="sbar2"><div class="sbf" style="width:75%;background:#ef4444"></div></div></div>
+            <div class="si"><div class="sl">CO₂</div><div class="sv">412 <span>ppm</span></div><div class="sbar2"><div class="sbf" style="width:41%;background:var(--green)"></div></div></div>
+          </div>
+          <div style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:7px">
+            <svg width="22" height="26"><use href="#sensorbot"/></svg>
+            <span style="font-family:var(--mono);font-size:.57rem;color:var(--muted)" id="sensor-status">Sensor BT-K01 · Conectado · 5s</span>
+          </div>
+        </div>
+        <button class="subbtn" onclick="showR()" id="submit-btn">Submeter Leitura ao Mapa →</button>
+      </div>
+      <div class="rpop" id="rpop">
+        <div class="rbox">
+          <svg width="88" height="108" style="animation:fl 2s ease-in-out infinite"><use href="#trophy"/></svg>
+          <div class="rtitle" id="reward-title">Missão Concluída!</div>
+          <div class="rpts">+50 XP · +20 pontos</div>
+          <div class="rbadge" id="reward-badge">🏅 Badge: "Caçador de Sombras" desbloqueado</div>
+          <div style="margin-top:9px;font-size:.74rem;color:var(--muted)" id="reward-msg">Dado adicionado ao mapa climático!</div>
+          <button class="rcls" onclick="closeR()" id="reward-btn">Ver no Mapa →</button>
+        </div>
+      </div>
+      <div class="bnav">
+        <button class="nb" onclick="go(0)"><svg><use href="#i-home"/></svg><span id="ln0b">Início</span></button>
+        <button class="nb on" onclick="go(1)"><svg><use href="#i-target"/></svg><span id="ln1b">Missões</span></button>
+        <button class="nb" onclick="go(2)"><svg><use href="#i-map"/></svg><span id="ln2b">Mapa</span></button>
+        <button class="nb" onclick="go(3)"><svg><use href="#i-bot"/></svg><span id="ln3b">ClimaBOT</span></button>
+        <button class="nb" onclick="go(4)"><svg><use href="#i-user"/></svg><span id="ln4b">Perfil</span></button>
+        <button class="nb game" onclick="go(5)"><svg><use href="#i-game"/></svg><span id="ln5b">Jogar</span></button>
+      </div>
+    </div>
+
+    <!-- ████ S2: MAP ████ -->
+    <div class="scr" id="s2">
+      <div class="mhdr"><h2 id="map-title">Mapa Climático</h2><p id="map-sub">Maxixe · 24 estações activas hoje</p></div>
+      <div class="mfr">
+        <div class="fp on" id="fp0">Temperatura</div>
+        <div class="fp" id="fp1">Qualidade do Ar</div>
+        <div class="fp" id="fp2">Chuva</div>
+        <div class="fp" id="fp3">UV</div>
+      </div>
+      <div style="padding:0 18px">
+        <div class="mcanvas">
+          <div class="rh" style="top:36%"></div><div class="rh" style="top:64%"></div>
+          <div class="rv" style="left:30%"></div><div class="rv" style="left:67%"></div>
+          <div style="position:absolute;top:18%;left:8%;width:48px;height:26px;background:rgba(255,255,255,.35);border-radius:4px"></div>
+          <div style="position:absolute;top:46%;left:37%;width:62px;height:22px;background:rgba(255,255,255,.35);border-radius:4px"></div>
+          <div style="position:absolute;top:69%;left:69%;width:50px;height:30px;background:rgba(255,255,255,.35);border-radius:4px"></div>
+          <div class="mpin" style="left:23%;top:33%"><div class="pb heat">32.1°C</div><div class="pt"></div><div class="pd heat"></div></div>
+          <div class="mpin" style="left:56%;top:27%"><div class="pb good">28.4°C</div><div class="pt"></div><div class="pd"></div></div>
+          <div class="mpin" style="left:74%;top:53%"><div class="pb warn">30.7°C</div><div class="pt"></div><div class="pd warn"></div></div>
+          <div class="mpin" style="left:41%;top:71%"><div class="pb good">27.9°C</div><div class="pt"></div><div class="pd"></div></div>
+          <div class="mpin" style="left:50%;top:51%">
+            <div style="background:#fff;border-radius:10px;padding:3px 7px;border:2px solid #a21caf;font-size:.54rem;font-weight:800;color:#a21caf;display:flex;align-items:center;gap:4px;box-shadow:0 3px 10px rgba(0,0,0,.15)">
+              <svg width="18" height="20"><use href="#tomas"/></svg><span id="you-label">Tu</span>
+            </div>
+            <div class="pt"></div><div class="pd" style="background:#a21caf"></div>
+          </div>
+          <div class="mleg">
+            <div class="mli"><div class="mld" style="background:#ef4444"></div><span id="leg0">Calor</span></div>
+            <div class="mli"><div class="mld" style="background:var(--sun-d)"></div><span id="leg1">Atenção</span></div>
+            <div class="mli"><div class="mld" style="background:var(--green)"></div><span id="leg2">OK</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="sh" style="margin-top:8px"><h3 id="nearby-title">Estações Próximas</h3><button class="sa" id="see-all-map">Ver todas</button></div>
+      <div class="sts">
+        <div class="stc"><div class="sth"><div class="std heat"></div><div class="stn" id="st1-name">Escola Primária #3</div></div><div class="stm"><div class="stme"><strong>32.1°C</strong>Temp</div><div class="stme"><strong>82%</strong>Hum</div><div class="stme"><strong>8.4</strong>UV</div></div><div class="stk"><svg width="16" height="18"><use href="#amara"/></svg><span id="st1-kid">Ana · 12 min</span></div></div>
+        <div class="stc"><div class="sth"><div class="std"></div><div class="stn" id="st2-name">Parque Central</div></div><div class="stm"><div class="stme"><strong>28.4°C</strong>Temp</div><div class="stme"><strong>76%</strong>Hum</div><div class="stme"><strong>6.1</strong>UV</div></div><div class="stk"><svg width="16" height="18"><use href="#tomas"/></svg><span id="st2-kid">Tu · 8 min</span></div></div>
+        <div class="stc"><div class="sth"><div class="std warn"></div><div class="stn" id="st3-name">Mercado Municipal</div></div><div class="stm"><div class="stme"><strong>30.7°C</strong>Temp</div><div class="stme"><strong>80%</strong>Hum</div><div class="stme"><strong>7.8</strong>UV</div></div><div class="stk"><svg width="16" height="18"><use href="#tomas"/></svg><span id="st3-kid">Paulo · 3 min</span></div></div>
+      </div>
+      <div class="bnav">
+        <button class="nb" onclick="go(0)"><svg><use href="#i-home"/></svg><span>Início</span></button>
+        <button class="nb" onclick="go(1)"><svg><use href="#i-target"/></svg><span>Missões</span></button>
+        <button class="nb on" onclick="go(2)"><svg><use href="#i-map"/></svg><span>Mapa</span></button>
+        <button class="nb" onclick="go(3)"><svg><use href="#i-bot"/></svg><span>ClimaBOT</span></button>
+        <button class="nb" onclick="go(4)"><svg><use href="#i-user"/></svg><span>Perfil</span></button>
+        <button class="nb game" onclick="go(5)"><svg><use href="#i-game"/></svg><span>Jogar</span></button>
+      </div>
+    </div>
+
+    <!-- ████ S3: BOT ████ -->
+    <div class="scr" id="s3">
+      <div class="bth">
+        <div class="btav"><svg width="42" height="50"><use href="#boto"/></svg></div>
+        <div class="bti"><h2>ClimaBOT</h2><p id="bot-sub">Assistente de Ciência Climática</p></div>
+        <div class="bts" id="bot-status">Online</div>
+      </div>
+      <div class="chat" id="chat">
+        <div class="msg b"><div class="mb" id="bot-intro">Olá Mateus! Registei <strong>28.4°C</strong> no Parque Central — parabéns! Sobre o que queres aprender hoje?</div><div class="mt2">9:41</div></div>
+        <div class="msg u"><div class="mb" id="bot-q1">O que é uma ilha de calor urbana?</div><div class="mt2">9:42</div></div>
+        <div class="msg b"><div class="mb">Uma <strong>ilha de calor urbana</strong> acontece quando a cidade é mais quente do que as zonas rurais ao redor. O alcatrão e o betão absorvem o sol como uma esponja gigante! A Escola #3 está <strong>3.7°C mais quente</strong> do que o Parque Central — exactamente por falta de árvores.</div><div class="mt2">9:42</div></div>
+      </div>
+      <div class="qrs" id="qrs-area">
+        <button class="qr" onclick="qreply('ajudar')" id="qr0">💚 Como ajudar?</button>
+        <button class="qr" onclick="qreply('co2')" id="qr1">💨 CO₂</button>
+        <button class="qr" onclick="qreply('uv')" id="qr2">☀️ UV</button>
+        <button class="qr" onclick="qreply('sensor')" id="qr3">📡 Sensores</button>
+      </div>
+      <div class="cinrow">
+        <input class="cin" id="inp" placeholder="Pergunta ao ClimaBOT..." onkeydown="if(event.key==='Enter')send()">
+        <button class="csend" onclick="send()">➤</button>
+      </div>
+      <div class="bnav" style="background:rgba(15,23,42,.98);border-top:1px solid rgba(255,255,255,.08)">
+        <button class="nb" onclick="go(0)"><svg style="stroke:rgba(255,255,255,.3)"><use href="#i-home"/></svg><span style="color:rgba(255,255,255,.3)">Início</span></button>
+        <button class="nb" onclick="go(1)"><svg style="stroke:rgba(255,255,255,.3)"><use href="#i-target"/></svg><span style="color:rgba(255,255,255,.3)">Missões</span></button>
+        <button class="nb" onclick="go(2)"><svg style="stroke:rgba(255,255,255,.3)"><use href="#i-map"/></svg><span style="color:rgba(255,255,255,.3)">Mapa</span></button>
+        <button class="nb on" onclick="go(3)" style="background:rgba(255,255,255,.08)"><svg style="stroke:#4ade80"><use href="#i-bot"/></svg><span style="color:#4ade80">ClimaBOT</span></button>
+        <button class="nb" onclick="go(4)"><svg style="stroke:rgba(255,255,255,.3)"><use href="#i-user"/></svg><span style="color:rgba(255,255,255,.3)">Perfil</span></button>
+        <button class="nb game" onclick="go(5)"><svg style="stroke:#a78bfa"><use href="#i-game"/></svg><span style="color:#a78bfa">Jogar</span></button>
+      </div>
+    </div>
+
+    <!-- ████ S4: PROFILE ████ -->
+    <div class="scr" id="s4">
+      <div class="phdr">
+        <div class="pavw"><svg width="88" height="106" style="animation:fl 3s ease-in-out infinite;filter:drop-shadow(0 8px 24px rgba(0,0,0,.22))"><use href="#tomas"/></svg></div>
+        <div class="pname">Mateus Nhantumbo</div>
+        <div class="plvl"><span class="lvd"></span><span id="lvl-text">Guardião do Clima · Nível 4</span></div>
+        <div class="pstats">
+          <div class="psc"><div class="n">680</div><div class="l" id="pts-lbl">Pontos</div></div>
+          <div class="psc"><div class="n">34</div><div class="l" id="missions-lbl">Missões</div></div>
+          <div class="psc"><div class="n">12</div><div class="l" id="badges-lbl">Badges</div></div>
+          <div class="psc"><div class="n">3</div><div class="l" id="trees-lbl">Árvores</div></div>
+        </div>
+      </div>
+      <div class="pbody">
+        <div class="sh" style="padding:0 0 10px"><h3 id="achiev-title">Conquistas</h3><button class="sa">Ver todas (24)</button></div>
+        <div class="bgrid">
+          <div class="bi"><div class="bicn"><svg width="36" height="42"><use href="#sensorbot"/></svg></div><div class="bnm" id="b0">Medidor</div></div>
+          <div class="bi"><div class="bicn"><svg width="30" height="38"><use href="#raindrop"/></svg></div><div class="bnm" id="b1">Chuva</div></div>
+          <div class="bi"><div class="bicn"><svg width="34" height="34"><use href="#sundude"/></svg></div><div class="bnm" id="b2">Solar</div></div>
+          <div class="bi"><div class="bicn"><svg width="28" height="36"><use href="#mappin"/></svg></div><div class="bnm" id="b3">Explorer</div></div>
+          <div class="bi"><div class="bicn"><svg width="32" height="38"><use href="#leaf"/></svg></div><div class="bnm" id="b4">Eco</div></div>
+          <div class="bi"><div class="bicn"><svg width="34" height="40"><use href="#boto"/></svg></div><div class="bnm" id="b5">Cientista</div></div>
+          <div class="bi lk"><div class="bicn"><svg width="36" height="30"><use href="#windkid"/></svg></div><div class="bnm" id="b6">Ventania</div></div>
+          <div class="bi lk"><div class="bicn"><svg width="28" height="36"><use href="#flame"/></svg></div><div class="bnm" id="b7">Chama</div></div>
+        </div>
+        <div class="sh" style="padding:6px 0 10px"><h3 id="impact-title">Impacto Real</h3></div>
+        <div class="icard">
+          <div class="iico"><svg width="46" height="56"><use href="#tree"/></svg></div>
+          <div class="itxt"><h4 id="trees-card-title">Árvores Plantadas</h4><p id="trees-card-sub">New Hope Foundation plantou pelo teu esforço em Maxixe</p></div>
+          <div class="inum">3</div>
+        </div>
+        <div class="icard" style="background:linear-gradient(135deg,#0c4a6e,#075985)">
+          <div class="iico"><svg width="38" height="44"><use href="#sensorbot"/></svg></div>
+          <div class="itxt"><h4 id="data-card-title">Dados Contribuídos</h4><p id="data-card-sub">Medições no mapa climático de Maxixe</p></div>
+          <div class="inum" style="color:var(--sky)">34</div>
+        </div>
+        <div class="sh" style="padding:6px 0 10px"><h3 id="history-title">Histórico Recente</h3></div>
+        <div>
+          <div class="hi"><div class="hiico"><svg width="26" height="30"><use href="#sensorbot"/></svg></div><div><div class="hitt" id="h0">Temperatura à Sombra</div><div class="hidt">Hoje · 09:38 · Parque Central</div></div><div class="hipt">+50 XP</div></div>
+          <div class="hi"><div class="hiico"><svg width="22" height="28"><use href="#raindrop"/></svg></div><div><div class="hitt" id="h1">Medição de Chuva</div><div class="hidt">Hoje · 07:15 · Casa</div></div><div class="hipt">+30 XP</div></div>
+          <div class="hi"><div class="hiico"><svg width="28" height="22"><use href="#windkid"/></svg></div><div><div class="hitt" id="h2">Qualidade do Ar</div><div class="hidt">Ontem · 15:42 · Escola</div></div><div class="hipt">+40 XP</div></div>
+          <div class="hi"><div class="hiico"><svg width="28" height="28"><use href="#sundude"/></svg></div><div><div class="hitt" id="h3">UV Index Tarde</div><div class="hidt">Ontem · 12:20 · Mercado</div></div><div class="hipt">+35 XP</div></div>
+        </div>
+      </div>
+      <div class="bnav">
+        <button class="nb" onclick="go(0)"><svg><use href="#i-home"/></svg><span>Início</span></button>
+        <button class="nb" onclick="go(1)"><svg><use href="#i-target"/></svg><span>Missões</span></button>
+        <button class="nb" onclick="go(2)"><svg><use href="#i-map"/></svg><span>Mapa</span></button>
+        <button class="nb" onclick="go(3)"><svg><use href="#i-bot"/></svg><span>ClimaBOT</span></button>
+        <button class="nb on" onclick="go(4)"><svg><use href="#i-user"/></svg><span>Perfil</span></button>
+        <button class="nb game" onclick="go(5)"><svg><use href="#i-game"/></svg><span>Jogar</span></button>
+      </div>
+    </div>
+
+    <!-- ████ S5: GAME (bilingual) ████ -->
+    <div class="scr" id="s5">
+      <!-- game top bar -->
+      <div class="gtop">
+        <button class="glang pt" id="lang-btn" onclick="toggleLang()">🇲🇿 PT</button>
+        <div class="gscore" id="gscore">Score: 0</div>
+        <div class="glives" id="glives">❤️❤️❤️</div>
+      </div>
+
+      <!-- game content area -->
+      <div class="gscr" id="game-area">
+        <!-- lobby shown by default -->
+        <div id="gstate-lobby" class="globby">
+          <div class="gltitle">
+            <h2 id="lobby-title">🌍 ClimaKids — Jogar</h2>
+            <p id="lobby-sub">Escolhe um nível · Choose a level</p>
+          </div>
+          <div class="glvls">
+            <div class="glvl done" onclick="startLevel(0)">
+              <span class="glvl-ico">🧠</span>
+              <div class="glvl-name" id="lvl0-name">Aprender</div>
+              <div class="glvl-sub" id="lvl0-sub">Quiz climático · 6 perguntas</div>
+              <span class="glvl-badge" id="lvl0-badge">✓ Completo</span>
+            </div>
+            <div class="glvl" onclick="startLevel(1)">
+              <span class="glvl-ico">🏗️</span>
+              <div class="glvl-name" id="lvl1-name">Construir</div>
+              <div class="glvl-sub" id="lvl1-sub">Bairro verde vs. poluído</div>
+            </div>
+            <div class="glvl" onclick="startLevel(2)">
+              <span class="glvl-ico">🆘</span>
+              <div class="glvl-name" id="lvl2-name">Crise</div>
+              <div class="glvl-sub" id="lvl2-sub">Ciclone · Seca · Cheias</div>
+            </div>
+            <div class="glvl locked">
+              <span class="glvl-ico">🏆</span>
+              <div class="glvl-name" id="lvl3-name">Herói</div>
+              <div class="glvl-sub" id="lvl3-sub">Completa os 3 níveis para desbloquear</div>
+            </div>
+          </div>
+          <!-- xp earned in game -->
+          <div style="margin:14px 0 0;background:rgba(255,255,255,.05);border-radius:14px;padding:12px 14px;border:1px solid rgba(255,255,255,.08)">
+            <div style="font-family:var(--mono);font-size:.58rem;color:rgba(255,255,255,.4);margin-bottom:4px" id="game-xp-lbl">XP ganho no jogo</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <span style="font-family:var(--mono);font-size:.75rem;color:#fcd34d;font-weight:700" id="game-xp-val">+120 XP</span>
+              <span style="font-size:.68rem;color:rgba(255,255,255,.5)" id="game-xp-detail">Nível 1 ×2 · Nível 2 ×1</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- quiz level -->
+        <div id="gstate-quiz" class="gquiz" style="display:none">
+          <div class="gq-hd">
+            <span class="gq-prog" id="q-prog">1 / 6</span>
+            <button onclick="backToLobby()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:.7rem;cursor:pointer;font-family:var(--mono)" id="q-back-btn">← voltar</button>
+          </div>
+          <div class="gq-progbar"><div class="gq-progfill" id="q-progfill" style="width:16%"></div></div>
+          <div class="gq-card">
+            <span class="gq-ico" id="q-ico">🌡️</span>
+            <div class="gq-q" id="q-text">Qual é a temperatura média anual em Maxixe?</div>
+          </div>
+          <div class="gq-opts" id="q-opts"></div>
+          <div class="gq-feedback" id="q-feedback"></div>
+          <button class="gq-next" id="q-next" onclick="nextQuestion()">Próxima →</button>
+        </div>
+
+        <!-- builder level -->
+        <div id="gstate-build" class="gbuilder" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <button onclick="backToLobby()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:.7rem;cursor:pointer;font-family:var(--mono)" id="build-back">← voltar</button>
+            <div style="font-family:var(--mono);font-size:.6rem;color:rgba(255,255,255,.4)" id="build-instr">Clica para adicionar ao bairro</div>
+          </div>
+          <div class="gbuild-scene" id="build-scene">
+            <div class="gbuild-sky"></div>
+            <div class="gbuild-ground"></div>
+            <div class="gbuild-items" id="build-items"></div>
+          </div>
+          <div class="gbuild-score">
+            <span id="build-score-lbl">Pontuação do bairro</span>
+            <strong id="build-score">0 / 10</strong>
+          </div>
+          <div class="gtools" id="build-tools"></div>
+          <button class="gq-next show" onclick="finishBuild()" id="build-done-btn">Ver resultado →</button>
+        </div>
+
+        <!-- crisis level -->
+        <div id="gstate-crisis" class="gcrisis" style="display:none">
+          <div class="gcrisis-hd">
+            <span class="gcrisis-ico" id="crisis-ico">🌀</span>
+            <div class="gcrisis-title" id="crisis-title">Ciclone Iminente</div>
+            <div class="gcrisis-sub" id="crisis-phase">Fase 1 de 3</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:.56rem;color:rgba(255,255,255,.35);margin-bottom:4px" id="crisis-bar-lbl">Risco da comunidade</div>
+          <div class="gcrisis-bar"><div class="gcrisis-barf" id="crisis-barf" style="width:70%;background:linear-gradient(90deg,#f59e0b,#ef4444)"></div></div>
+          <div class="gcrisis-choices" id="crisis-choices"></div>
+          <div class="gq-feedback" id="crisis-feedback" style="margin-top:10px"></div>
+          <button class="gq-next" id="crisis-next" onclick="nextCrisis()">Próxima fase →</button>
+        </div>
+
+        <!-- result screen -->
+        <div id="gstate-result" class="gresult" style="display:none">
+          <span class="gresult-star" id="result-ico">🌟</span>
+          <div class="gresult-title" id="result-title">Nível Completo!</div>
+          <div class="gresult-pts" id="result-pts">+60 XP</div>
+          <div class="gresult-detail" id="result-detail">6/6 correctas · Perfeito!</div>
+          <button class="gresult-btn" onclick="backToLobby()" id="result-btn">Próximo nível →</button>
+          <div class="gresult-badges" id="result-badges"></div>
+        </div>
+      </div>
+
+      <div class="bnav">
+        <button class="nb" onclick="go(0)"><svg><use href="#i-home"/></svg><span>Início</span></button>
+        <button class="nb" onclick="go(1)"><svg><use href="#i-target"/></svg><span>Missões</span></button>
+        <button class="nb" onclick="go(2)"><svg><use href="#i-map"/></svg><span>Mapa</span></button>
+        <button class="nb" onclick="go(3)"><svg><use href="#i-bot"/></svg><span>ClimaBOT</span></button>
+        <button class="nb" onclick="go(4)"><svg><use href="#i-user"/></svg><span>Perfil</span></button>
+        <button class="nb game on" onclick="go(5)"><svg><use href="#i-game"/></svg><span>Jogar</span></button>
+      </div>
+    </div>
+
+  </div><!-- /screen-wrap -->
+</div><!-- /phone -->
+
+<!-- DEMO BAR -->
+<div class="dbar">
+  <span class="dl">Navegar:</span>
+  <div class="dn">
+    <button onclick="go(0)" id="d0" class="on">Home</button>
+    <button onclick="go(1)" id="d1">Missão</button>
+    <button onclick="go(2)" id="d2">Mapa</button>
+    <button onclick="go(3)" id="d3">BOT</button>
+    <button onclick="go(4)" id="d4">Perfil</button>
+    <button onclick="go(5)" id="d5" class="gon" style="background:#7c3aed;border-color:#7c3aed;color:#fff">🎮 Jogo</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  BILINGUAL CONTENT DATA
+// ═══════════════════════════════════════════
+const L = {
+  pt: {
+    // nav labels
+    nav:['Início','Missões','Mapa','ClimaBOT','Perfil','Jogar'],
+    // home
+    greeting:'Bom dia 👋',
+    gameBannerTitle:'Jogar ClimaKids',
+    gameBannerSub:'4 níveis · EN / PT · Quiz + Construir + Crise',
+    gameBannerBtn:'Jogar →',
+    // mission
+    mcat:'Missão de Temperatura · +50 XP',
+    mttl:'Mede a Temperatura<br>à Sombra',
+    mdesc:'Vai a um lugar com sombra natural e mede a temperatura durante 3 minutos. Compara com a temperatura ao sol para identificar <strong>ilhas de calor urbanas</strong> no teu bairro.',
+    stepsLbl:'Passos da Missão',
+    steps:['Vai para um local com sombra natural','Liga o sensor via Bluetooth','Aguarda 3 minutos de leitura estável','Confirma e envia para o mapa'],
+    readingsLbl:'Leituras em Tempo Real',
+    humLbl:'Humidade',
+    sensorStatus:'Sensor BT-K01 · Conectado · 5s',
+    submitBtn:'Submeter Leitura ao Mapa →',
+    rewardTitle:'Missão Concluída!',
+    rewardBadge:'🏅 Badge: "Caçador de Sombras" desbloqueado',
+    rewardMsg:'Dado adicionado ao mapa climático!',
+    rewardBtn:'Ver no Mapa →',
+    // map
+    mapTitle:'Mapa Climático',
+    mapSub:'Maxixe · 24 estações activas hoje',
+    filters:['Temperatura','Qualidade do Ar','Chuva','UV'],
+    youLabel:'Tu',
+    legend:['Calor','Atenção','OK'],
+    nearbyTitle:'Estações Próximas',
+    seeAllMap:'Ver todas',
+    stKids:['Ana · 12 min','Tu · 8 min','Paulo · 3 min'],
+    // bot
+    botSub:'Assistente de Ciência Climática',
+    botStatus:'Online',
+    botIntro:'Olá Mateus! Registei <strong>28.4°C</strong> no Parque Central — parabéns! Sobre o que queres aprender hoje?',
+    botQ1:'O que é uma ilha de calor urbana?',
+    qrLabels:['💚 Como ajudar?','💨 CO₂','☀️ UV','📡 Sensores'],
+    qrKeys:['ajudar','co2','uv','sensor'],
+    botReplies:{
+      ajudar:'Podes ajudar muito! 💚 Faz as tuas medições diárias, converte pontos em árvores plantadas, e partilha com a tua família o que aprendes. Cada leitura vai para o mapa e ajuda a câmara de Maxixe a tomar melhores decisões! 🌍',
+      co2:'CO₂ é dióxido de carbono — existe naturalmente no ar. As plantas adoram absorvê-lo para crescer. O problema é que fábricas e carros libertam tanto CO₂ extra que o planeta está a aquecer. O nível normal é ~415 ppm!',
+      uv:'O UV Index mede a força da radiação ultravioleta do sol. Em Maxixe costumas ver 7-9 ao meio-dia — muito alto! Usa protetor solar FPS 30+, chapéu, e evita sair entre as 11h-15h. ☀️',
+      sensor:'O kit ClimaKids tem chips que sentem o mundo físico! Temperatura via resistência eléctrica, UV via fotões, CO₂ via infravermelhos. Tudo envia por Bluetooth via chip ESP32! 📡'
+    },
+    botGeneric:'Boa questão! Experimenta as sugestões rápidas abaixo. 🌍',
+    chatPlaceholder:'Pergunta ao ClimaBOT...',
+    // profile
+    lvlText:'Guardião do Clima · Nível 4',
+    statsLbls:['Pontos','Missões','Badges','Árvores'],
+    achievTitle:'Conquistas',
+    bNames:['Medidor','Chuva','Solar','Explorer','Eco','Cientista','Ventania','Chama'],
+    impactTitle:'Impacto Real',
+    treesCardTitle:'Árvores Plantadas',
+    treesCardSub:'New Hope Foundation plantou pelo teu esforço em Maxixe',
+    dataCardTitle:'Dados Contribuídos',
+    dataCardSub:'Medições no mapa climático de Maxixe',
+    historyTitle:'Histórico Recente',
+    histItems:['Temperatura à Sombra','Medição de Chuva','Qualidade do Ar','UV Index Tarde'],
+    // game
+    langBtn:'🇲🇿 PT',
+    lobbyTitle:'🌍 ClimaKids — Jogar',
+    lobbySub:'Escolhe um nível · Choose a level',
+    lvlNames:['Aprender','Construir','Crise','Herói'],
+    lvlSubs:['Quiz climático · 6 perguntas','Bairro verde vs. poluído','Ciclone · Seca · Cheias','Completa os 3 níveis para desbloquear'],
+    lvl0Badge:'✓ Completo',
+    gameXpLbl:'XP ganho no jogo',
+    gameXpDetail:'Nível 1 ×2 · Nível 2 ×1',
+    qBackBtn:'← voltar',
+    buildBack:'← voltar',
+    buildInstr:'Clica para adicionar ao bairro',
+    buildScoreLbl:'Pontuação do bairro',
+    buildDoneBtn:'Ver resultado →',
+    nextBtn:'Próxima →',
+    crisisBarLbl:'Risco da comunidade',
+    nextCrisisBtn:'Próxima fase →',
+    resultTitle:'Nível Completo!',
+    resultBtn:'Próximo nível →',
+    // quiz data
+    quizTitle:'Aprender',
+    questions:[
+      {ico:'🌡️',q:'Qual é a temperatura média anual em Maxixe?',opts:['22°C','27°C','35°C','18°C'],ans:1,fb:'Correcto! Maxixe tem clima tropical com média anual de ~27°C.'},
+      {ico:'🌊',q:'Qual fenómeno torna as cidades mais quentes do que o campo?',opts:['Brisa marítima','Ilha de calor urbana','Efeito de estufa','Evaporação'],ans:1,fb:'Exacto! As ilhas de calor urbanas formam-se porque o alcatrão e betão absorvem e retêm o calor.'},
+      {ico:'💨',q:'Qual é o nível normal de CO₂ na atmosfera?',opts:['200 ppm','415 ppm','600 ppm','1000 ppm'],ans:1,fb:'Correcto! ~415 ppm é o nível actual — já acima dos 280 ppm pré-industriais.'},
+      {ico:'☀️',q:'UV Index de 8 é considerado...',opts:['Baixo','Moderado','Alto','Muito alto'],ans:3,fb:'Muito alto! UV 6–7 já é alto; a partir de 8 usa protetor solar e chapéu obrigatoriamente.'},
+      {ico:'🌧️',q:'Moçambique está a aquecer mais rápido que a média global?',opts:['Não, igual','Sim, 1.5× mais rápido','Não, mais lento','Sim, 3× mais rápido'],ans:1,fb:'Sim! A África austral aquece ~1.5× mais rápido que a média global. Os teus dados ajudam a documentar isso.'},
+      {ico:'🌱',q:'Qual a melhor forma de combater as ilhas de calor urbanas?',opts:['Mais alcatrão','Plantar árvores','Mais edifícios','Ar condicionado'],ans:1,fb:'Plantar árvores! Elas providenciam sombra, arrefecem o ar por evapotranspiração e sequestram CO₂.'},
+    ],
+    // builder data
+    tools:[
+      {ico:'🌳',lbl:'Árvore',pts:2,type:'good'},{ico:'🌿',lbl:'Jardim',pts:1,type:'good'},
+      {ico:'☀️',lbl:'Painel solar',pts:2,type:'good'},{ico:'🚲',lbl:'Ciclovias',pts:1,type:'good'},
+      {ico:'🏭',lbl:'Fábrica',pts:-2,type:'bad'},{ico:'🚗',lbl:'Mais carros',pts:-1,type:'bad'},
+    ],
+    buildScoreParts:['pontos do bairro','Excelente!','Pode melhorar!'],
+    // crisis data
+    crises:[
+      {ico:'🌀',title:'Ciclone Iminente',phases:[
+        {ph:'Fase 1 · Preparação',choices:[
+          {ico:'🏠',txt:'Reforçar casas e estocar comida',good:true,fb:'Excelente! Preparação antecipada salva vidas.'},
+          {ico:'😴',txt:'Esperar e ver o que acontece',good:false,fb:'Perigoso! A preparação antecipada é fundamental.'},
+        ]},
+        {ph:'Fase 2 · Ciclone',choices:[
+          {ico:'🏠',txt:'Ficar em casa e longe das janelas',good:true,fb:'Correcto! Manter-se em abrigo seguro é essencial.'},
+          {ico:'🚗',txt:'Tentar evacuar durante o ciclone',good:false,fb:'Muito perigoso! Nunca sair durante o ciclone.'},
+        ]},
+        {ph:'Fase 3 · Recuperação',choices:[
+          {ico:'🌱',txt:'Plantar árvores para reconstruir',good:true,fb:'Óptimo! Replantar árvores ajuda a recuperar e prevenir erosão.'},
+          {ico:'🏗️',txt:'Reconstruir sem replantação',good:false,fb:'Falta a parte verde! Árvores protegem de futuros ciclones.'},
+        ]},
+      ]},
+    ],
+  },
+  en: {
+    nav:['Home','Missions','Map','ClimaBOT','Profile','Play'],
+    greeting:'Good morning 👋',
+    gameBannerTitle:'Play ClimaKids',
+    gameBannerSub:'4 levels · EN / PT · Quiz + Build + Crisis',
+    gameBannerBtn:'Play →',
+    mcat:'Temperature Mission · +50 XP',
+    mttl:'Measure Temperature<br>in the Shade',
+    mdesc:'Go to a place with natural shade and measure the air temperature for 3 minutes. Compare with the temperature in the sun to identify <strong>urban heat islands</strong> in your neighbourhood.',
+    stepsLbl:'Mission Steps',
+    steps:['Go to a location with natural shade','Connect the sensor via Bluetooth','Wait 3 minutes for a stable reading','Confirm and send to the map'],
+    readingsLbl:'Live Readings',
+    humLbl:'Humidity',
+    sensorStatus:'Sensor BT-K01 · Connected · 5s',
+    submitBtn:'Submit Reading to Map →',
+    rewardTitle:'Mission Complete!',
+    rewardBadge:'🏅 Badge: "Shadow Hunter" unlocked',
+    rewardMsg:'Data added to the climate map!',
+    rewardBtn:'View on Map →',
+    mapTitle:'Climate Map',
+    mapSub:'Maxixe · 24 active stations today',
+    filters:['Temperature','Air Quality','Rain','UV'],
+    youLabel:'You',
+    legend:['Heat','Caution','OK'],
+    nearbyTitle:'Nearby Stations',
+    seeAllMap:'See all',
+    stKids:['Ana · 12 min','You · 8 min','Paulo · 3 min'],
+    botSub:'Climate Science Assistant',
+    botStatus:'Online',
+    botIntro:'Hello Mateus! I recorded <strong>28.4°C</strong> at Central Park — great work! What would you like to learn today?',
+    botQ1:'What is an urban heat island?',
+    qrLabels:['💚 How to help?','💨 CO₂','☀️ UV','📡 Sensors'],
+    qrKeys:['ajudar','co2','uv','sensor'],
+    botReplies:{
+      ajudar:"You can help a lot! 💚 Do your daily measurements, convert points into planted trees, and share what you learn with your family. Every reading goes to the map and helps Maxixe's city council make better decisions! 🌍",
+      co2:'CO₂ is carbon dioxide — it occurs naturally in the air. Plants love absorbing it to grow. The problem is that factories and cars release so much extra CO₂ that the planet is warming. Normal level is ~415 ppm!',
+      uv:'The UV Index measures the strength of ultraviolet radiation from the sun. In Maxixe you usually see 7-9 at midday — very high! Use SPF 30+ sunscreen, a hat, and avoid going out between 11am-3pm. ☀️',
+      sensor:'The ClimaKids kit has chips that sense the physical world! Temperature via electrical resistance, UV via photons, CO₂ via infrared. Everything is sent via Bluetooth through an ESP32 chip! 📡'
+    },
+    botGeneric:'Great question! Try the quick suggestions below. 🌍',
+    chatPlaceholder:'Ask ClimaBOT...',
+    lvlText:'Climate Guardian · Level 4',
+    statsLbls:['Points','Missions','Badges','Trees'],
+    achievTitle:'Achievements',
+    bNames:['Sensor','Rain','Solar','Explorer','Eco','Scientist','Wind','Flame'],
+    impactTitle:'Real Impact',
+    treesCardTitle:'Trees Planted',
+    treesCardSub:'New Hope Foundation planted trees in Maxixe through your effort',
+    dataCardTitle:'Data Contributed',
+    dataCardSub:'Measurements on the Maxixe climate map',
+    historyTitle:'Recent History',
+    histItems:['Temperature in Shade','Rain Measurement','Air Quality','UV Index Afternoon'],
+    langBtn:'🇬🇧 EN',
+    lobbyTitle:'🌍 ClimaKids — Play',
+    lobbySub:'Escolhe um nível · Choose a level',
+    lvlNames:['Learn','Build','Crisis','Hero'],
+    lvlSubs:['Climate quiz · 6 questions','Green vs. polluted neighbourhood','Cyclone · Drought · Floods','Complete 3 levels to unlock'],
+    lvl0Badge:'✓ Complete',
+    gameXpLbl:'XP earned in game',
+    gameXpDetail:'Level 1 ×2 · Level 2 ×1',
+    qBackBtn:'← back',
+    buildBack:'← back',
+    buildInstr:'Click to add to neighbourhood',
+    buildScoreLbl:'Neighbourhood score',
+    buildDoneBtn:'See result →',
+    nextBtn:'Next →',
+    crisisBarLbl:'Community risk',
+    nextCrisisBtn:'Next phase →',
+    resultTitle:'Level Complete!',
+    resultBtn:'Next level →',
+    quizTitle:'Learn',
+    questions:[
+      {ico:'🌡️',q:'What is the average annual temperature in Maxixe?',opts:['22°C','27°C','35°C','18°C'],ans:1,fb:'Correct! Maxixe has a tropical climate with an average of ~27°C per year.'},
+      {ico:'🌊',q:'What phenomenon makes cities hotter than the countryside?',opts:['Sea breeze','Urban heat island','Greenhouse effect','Evaporation'],ans:1,fb:'Exactly! Urban heat islands form because asphalt and concrete absorb and retain heat.'},
+      {ico:'💨',q:'What is the normal CO₂ level in the atmosphere?',opts:['200 ppm','415 ppm','600 ppm','1000 ppm'],ans:1,fb:'Correct! ~415 ppm is the current level — already above the pre-industrial 280 ppm.'},
+      {ico:'☀️',q:'A UV Index of 8 is considered...',opts:['Low','Moderate','High','Very high'],ans:3,fb:'Very high! UV 6–7 is already high; from 8 upwards always wear sunscreen and a hat.'},
+      {ico:'🌧️',q:'Is Mozambique warming faster than the global average?',opts:["No, same rate",'Yes, 1.5× faster','No, slower','Yes, 3× faster'],ans:1,fb:'Yes! Southern Africa is warming ~1.5× faster than the global average. Your data helps document this.'},
+      {ico:'🌱',q:'What is the best way to fight urban heat islands?',opts:['More asphalt','Plant trees','More buildings','Air conditioning'],ans:1,fb:'Plant trees! They provide shade, cool the air through evapotranspiration, and sequester CO₂.'},
+    ],
+    tools:[
+      {ico:'🌳',lbl:'Tree',pts:2,type:'good'},{ico:'🌿',lbl:'Garden',pts:1,type:'good'},
+      {ico:'☀️',lbl:'Solar panel',pts:2,type:'good'},{ico:'🚲',lbl:'Bike lane',pts:1,type:'good'},
+      {ico:'🏭',lbl:'Factory',pts:-2,type:'bad'},{ico:'🚗',lbl:'More cars',pts:-1,type:'bad'},
+    ],
+    buildScoreParts:['neighbourhood points','Excellent!','Could be better!'],
+    crises:[
+      {ico:'🌀',title:'Cyclone Warning',phases:[
+        {ph:'Phase 1 · Preparation',choices:[
+          {ico:'🏠',txt:'Reinforce homes and stock food',good:true,fb:'Excellent! Early preparation saves lives.'},
+          {ico:'😴',txt:'Wait and see what happens',good:false,fb:'Dangerous! Early preparation is critical.'},
+        ]},
+        {ph:'Phase 2 · Cyclone',choices:[
+          {ico:'🏠',txt:'Stay indoors and away from windows',good:true,fb:'Correct! Staying in a safe shelter is essential.'},
+          {ico:'🚗',txt:'Try to evacuate during the cyclone',good:false,fb:'Very dangerous! Never go outside during a cyclone.'},
+        ]},
+        {ph:'Phase 3 · Recovery',choices:[
+          {ico:'🌱',txt:'Plant trees to rebuild',good:true,fb:'Great! Replanting trees helps recovery and prevents erosion.'},
+          {ico:'🏗️',txt:'Rebuild without replanting',good:false,fb:'Missing the green part! Trees protect against future cyclones.'},
+        ]},
+      ]},
+    ],
+  }
+};
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let lang = 'pt';
+let score = 0;
+let lives = 3;
+let qIdx = 0;
+let crisisPhase = 0;
+let buildScore = 0;
+let gXP = 120;
+
+// ═══════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════
+function go(i){
+  ['s0','s1','s2','s3','s4','s5'].forEach((s,j)=>{
+    document.getElementById(s).classList.toggle('on',j===i);
+    const db=document.getElementById('d'+j);
+    if(db){db.classList.toggle('on',j!==5&&j===i);db.classList.toggle('gon',j===5&&j===i);}
+  });
+  document.getElementById('sbar').classList.toggle('inv',i===3);
+}
+
+// ═══════════════════════════════════════════
+//  SENSOR LIVE
+// ═══════════════════════════════════════════
+let t=28.4;
+setInterval(()=>{
+  t+=(Math.random()-.5)*.3;t=Math.max(27.8,Math.min(29.1,t));
+  const e=document.getElementById('tv');
+  if(e)e.innerHTML=t.toFixed(1)+' <span>°C</span>';
+},2200);
+
+// ═══════════════════════════════════════════
+//  MISSION REWARD
+// ═══════════════════════════════════════════
+function showR(){document.getElementById('rpop').classList.add('on')}
+function closeR(){document.getElementById('rpop').classList.remove('on');go(2)}
+
+// ═══════════════════════════════════════════
+//  BOT CHAT
+// ═══════════════════════════════════════════
+function qreply(key){
+  const d=L[lang];
+  addm(d.botReplies[key]||d.botGeneric,'b');
+}
+function send(){
+  const i=document.getElementById('inp');const tx=i.value.trim();if(!tx)return;i.value='';
+  addm(tx,'u');
+  setTimeout(()=>addm(L[lang].botGeneric,'b'),850);
+}
+function addm(text,type){
+  const a=document.getElementById('chat');
+  const now=new Date();const tm=`${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const d=document.createElement('div');d.className=`msg ${type}`;
+  d.innerHTML=`<div class="mb">${text}</div><div class="mt2">${tm}</div>`;
+  a.appendChild(d);a.scrollTop=a.scrollHeight;
+}
+
+// ═══════════════════════════════════════════
+//  LANGUAGE TOGGLE
+// ═══════════════════════════════════════════
+function toggleLang(){
+  lang = lang==='pt'?'en':'pt';
+  applyLang();
+}
+
+function applyLang(){
+  const d=L[lang];
+  const btn=document.getElementById('lang-btn');
+  btn.textContent=d.langBtn;
+  btn.className='glang '+(lang==='pt'?'pt':'en');
+
+  // nav labels (all nav bars)
+  for(let i=0;i<6;i++){
+    ['ln'+i,'ln'+i+'b'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.textContent=d.nav[i];
+    });
+  }
+  // home
+  document.getElementById('game-banner-title').textContent=d.gameBannerTitle;
+  document.getElementById('game-banner-sub').textContent=d.gameBannerSub;
+  document.getElementById('game-banner-btn').textContent=d.gameBannerBtn;
+  // mission
+  document.getElementById('mcat-lbl').textContent=d.mcat;
+  document.getElementById('mttl-lbl').innerHTML=d.mttl;
+  document.getElementById('mdesc-lbl').innerHTML=d.mdesc;
+  document.getElementById('steps-lbl').textContent=d.stepsLbl;
+  d.steps.forEach((s,i)=>{const el=document.getElementById('step'+(i+1));if(el)el.textContent=s;});
+  document.getElementById('readings-lbl').textContent=d.readingsLbl;
+  document.getElementById('hum-lbl').textContent=d.humLbl;
+  document.getElementById('sensor-status').textContent=d.sensorStatus;
+  document.getElementById('submit-btn').textContent=d.submitBtn;
+  document.getElementById('reward-title').textContent=d.rewardTitle;
+  document.getElementById('reward-badge').textContent=d.rewardBadge;
+  document.getElementById('reward-msg').textContent=d.rewardMsg;
+  document.getElementById('reward-btn').textContent=d.rewardBtn;
+  // map
+  document.getElementById('map-title').textContent=d.mapTitle;
+  document.getElementById('map-sub').textContent=d.mapSub;
+  d.filters.forEach((f,i)=>{const el=document.getElementById('fp'+i);if(el)el.textContent=f;});
+  document.getElementById('you-label').textContent=d.youLabel;
+  d.legend.forEach((l,i)=>{const el=document.getElementById('leg'+i);if(el)el.textContent=l;});
+  document.getElementById('nearby-title').textContent=d.nearbyTitle;
+  document.getElementById('see-all-map').textContent=d.seeAllMap;
+  d.stKids.forEach((k,i)=>{const el=document.getElementById('st'+(i+1)+'-kid');if(el)el.textContent=k;});
+  // bot
+  document.getElementById('bot-sub').textContent=d.botSub;
+  document.getElementById('bot-status').textContent=d.botStatus;
+  document.getElementById('bot-intro').innerHTML=d.botIntro;
+  document.getElementById('bot-q1').textContent=d.botQ1;
+  document.getElementById('inp').placeholder=d.chatPlaceholder;
+  d.qrLabels.forEach((l,i)=>{const el=document.getElementById('qr'+i);if(el)el.textContent=l;});
+  // profile
+  document.getElementById('lvl-text').textContent=d.lvlText;
+  ['pts-lbl','missions-lbl','badges-lbl','trees-lbl'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=d.statsLbls[i];});
+  document.getElementById('achiev-title').textContent=d.achievTitle;
+  d.bNames.forEach((b,i)=>{const el=document.getElementById('b'+i);if(el)el.textContent=b;});
+  document.getElementById('impact-title').textContent=d.impactTitle;
+  document.getElementById('trees-card-title').textContent=d.treesCardTitle;
+  document.getElementById('trees-card-sub').textContent=d.treesCardSub;
+  document.getElementById('data-card-title').textContent=d.dataCardTitle;
+  document.getElementById('data-card-sub').textContent=d.dataCardSub;
+  document.getElementById('history-title').textContent=d.historyTitle;
+  d.histItems.forEach((h,i)=>{const el=document.getElementById('h'+i);if(el)el.textContent=h;});
+  // game lobby
+  document.getElementById('lobby-title').textContent=d.lobbyTitle;
+  document.getElementById('lobby-sub').textContent=d.lobbySub;
+  d.lvlNames.forEach((n,i)=>{const el=document.getElementById('lvl'+i+'-name');if(el)el.textContent=n;});
+  d.lvlSubs.forEach((s,i)=>{const el=document.getElementById('lvl'+i+'-sub');if(el)el.textContent=s;});
+  document.getElementById('lvl0-badge').textContent=d.lvl0Badge;
+  document.getElementById('game-xp-lbl').textContent=d.gameXpLbl;
+  document.getElementById('game-xp-detail').textContent=d.gameXpDetail;
+  document.getElementById('q-back-btn').textContent=d.qBackBtn;
+  document.getElementById('build-back').textContent=d.buildBack;
+  document.getElementById('build-instr').textContent=d.buildInstr;
+  document.getElementById('build-score-lbl').textContent=d.buildScoreLbl;
+  document.getElementById('build-done-btn').textContent=d.buildDoneBtn;
+  document.getElementById('q-next').textContent=d.nextBtn;
+  document.getElementById('crisis-bar-lbl').textContent=d.crisisBarLbl;
+  document.getElementById('crisis-next').textContent=d.nextCrisisBtn;
+  document.getElementById('result-title').textContent=d.resultTitle;
+  document.getElementById('result-btn').textContent=d.resultBtn;
+  // update score display
+  updateHUD();
+  // re-render current game state if quiz active
+  if(document.getElementById('gstate-quiz').style.display!=='none') renderQuestion();
+  if(document.getElementById('gstate-build').style.display!=='none') renderBuilder();
+  if(document.getElementById('gstate-crisis').style.display!=='none') renderCrisis();
+}
+
+// ═══════════════════════════════════════════
+//  HUD
+// ═══════════════════════════════════════════
+function updateHUD(){
+  document.getElementById('gscore').textContent='Score: '+score;
+  document.getElementById('glives').textContent='❤️'.repeat(Math.max(0,lives));
+  document.getElementById('game-xp-val').textContent='+'+gXP+' XP';
+}
+
+// ═══════════════════════════════════════════
+//  GAME STATES
+// ═══════════════════════════════════════════
+function setGameState(state){
+  ['lobby','quiz','build','crisis','result'].forEach(s=>{
+    document.getElementById('gstate-'+s).style.display=s===state?'block':'none';
+  });
+}
+
+function backToLobby(){setGameState('lobby')}
+
+// ═══════════════════════════════════════════
+//  LEVEL 0: QUIZ
+// ═══════════════════════════════════════════
+function startLevel(lvl){
+  if(lvl===0){
+    qIdx=0;score=0;lives=3;
+    setGameState('quiz');
+    renderQuestion();
+  } else if(lvl===1){
+    buildScore=0;
+    setGameState('build');
+    renderBuilder();
+  } else if(lvl===2){
+    crisisPhase=0;
+    setGameState('crisis');
+    renderCrisis();
+  }
+}
+
+function renderQuestion(){
+  const qs=L[lang].questions;
+  if(qIdx>=qs.length){showResult('quiz');return;}
+  const q=qs[qIdx];
+  document.getElementById('q-ico').textContent=q.ico;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('q-prog').textContent=(qIdx+1)+' / '+qs.length;
+  document.getElementById('q-progfill').style.width=(((qIdx)/qs.length)*100)+'%';
+  document.getElementById('q-feedback').className='gq-feedback';
+  document.getElementById('q-feedback').textContent='';
+  document.getElementById('q-next').className='gq-next';
+  const opts=document.getElementById('q-opts');
+  opts.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='gq-opt';b.textContent=o;
+    b.onclick=()=>answerQ(i,q.ans,q.fb);
+    opts.appendChild(b);
+  });
+}
+
+function answerQ(chosen,correct,fb){
+  document.querySelectorAll('.gq-opt').forEach(b=>b.classList.add('disabled'));
+  document.querySelectorAll('.gq-opt')[chosen].classList.add(chosen===correct?'correct':'wrong');
+  if(chosen!==correct){
+    document.querySelectorAll('.gq-opt')[correct].classList.add('correct');
+    lives=Math.max(0,lives-1);
+  } else {
+    score+=10;gXP+=10;
+  }
+  const fb2=document.getElementById('q-feedback');
+  fb2.className='gq-feedback show '+(chosen===correct?'ok':'err');
+  fb2.textContent=fb;
+  document.getElementById('q-next').className='gq-next show';
+  updateHUD();
+}
+
+function nextQuestion(){
+  qIdx++;renderQuestion();
+}
+
+// ═══════════════════════════════════════════
+//  LEVEL 1: BUILDER
+// ═══════════════════════════════════════════
+function renderBuilder(){
+  const d=L[lang];
+  buildScore=0;
+  document.getElementById('build-score').textContent='0 / 10';
+  document.getElementById('build-items').innerHTML='';
+  const container=document.getElementById('build-tools');
+  container.innerHTML='';
+  d.tools.forEach(tool=>{
+    const div=document.createElement('div');
+    div.className='gtool '+(tool.type==='good'?'good':'bad');
+    div.innerHTML=`<span style="font-size:1.3rem">${tool.ico}</span><span class="gtool-lbl">${tool.lbl} (${tool.pts>0?'+':''}${tool.pts})</span>`;
+    div.onclick=()=>placeTool(tool);
+    container.appendChild(div);
+  });
+}
+
+function placeTool(tool){
+  const scene=document.getElementById('build-items');
+  const span=document.createElement('span');
+  span.className='gbuild-item placed';span.textContent=tool.ico;
+  span.style.left=Math.random()*80+'%';
+  scene.appendChild(span);
+  buildScore=Math.min(10,Math.max(-2,buildScore+tool.pts));
+  score+=Math.max(0,tool.pts);gXP+=Math.max(0,tool.pts*3);
+  document.getElementById('build-score').textContent=buildScore+' / 10';
+  updateHUD();
+}
+
+function finishBuild(){
+  const d=L[lang];
+  const good=buildScore>=5;
+  document.getElementById('result-ico').textContent=good?'🏗️🌳':'🏗️';
+  document.getElementById('result-title').textContent=d.resultTitle;
+  document.getElementById('result-pts').textContent='+'+Math.max(0,buildScore*5)+' XP · '+buildScore+' '+d.buildScoreParts[0];
+  document.getElementById('result-detail').textContent=good?d.buildScoreParts[1]:d.buildScoreParts[2];
+  document.getElementById('result-badges').innerHTML=good?'<div class="grb"><span class="grb-ico">🌳</span><span class="grb-lbl">Verde</span></div>':'';
+  setGameState('result');
+}
+
+// ═══════════════════════════════════════════
+//  LEVEL 2: CRISIS
+// ═══════════════════════════════════════════
+function renderCrisis(){
+  const d=L[lang];
+  const crisis=d.crises[0];
+  document.getElementById('crisis-ico').textContent=crisis.ico;
+  document.getElementById('crisis-title').textContent=crisis.title;
+  const phase=crisis.phases[crisisPhase];
+  document.getElementById('crisis-phase').textContent=phase.ph;
+  document.getElementById('crisis-barf').style.width=(70-crisisPhase*20)+'%';
+  document.getElementById('crisis-feedback').className='gq-feedback';
+  document.getElementById('crisis-next').className='gq-next';
+  const choices=document.getElementById('crisis-choices');
+  choices.innerHTML='';
+  phase.choices.forEach(ch=>{
+    const div=document.createElement('div');
+    div.className='gcrisis-ch';
+    div.innerHTML=`<span class="gcrisis-ch-ico">${ch.ico}</span><span class="gcrisis-ch-txt">${ch.txt}</span>`;
+    div.onclick=()=>answerCrisis(ch);
+    choices.appendChild(div);
+  });
+}
+
+function answerCrisis(ch){
+  document.querySelectorAll('.gcrisis-ch').forEach(c=>c.style.pointerEvents='none');
+  const idx=Array.from(document.querySelectorAll('.gcrisis-ch')).findIndex(c=>c.querySelector('.gcrisis-ch-txt').textContent===ch.txt);
+  const els=document.querySelectorAll('.gcrisis-ch');
+  if(idx>=0)els[idx].classList.add(ch.good?'good':'bad');
+  const fb=document.getElementById('crisis-feedback');
+  fb.className='gq-feedback show '+(ch.good?'ok':'err');
+  fb.textContent=ch.fb;
+  if(ch.good){score+=15;gXP+=15;}else{lives=Math.max(0,lives-1);}
+  document.getElementById('crisis-next').className='gq-next show';
+  updateHUD();
+}
+
+function nextCrisis(){
+  crisisPhase++;
+  if(crisisPhase>=L[lang].crises[0].phases.length){
+    showResult('crisis');
+  } else {
+    renderCrisis();
+  }
+}
+
+// ═══════════════════════════════════════════
+//  RESULT SCREEN
+// ═══════════════════════════════════════════
+function showResult(from){
+  const d=L[lang];
+  const icons={quiz:'🌟',crisis:'🆘✅'};
+  document.getElementById('result-ico').textContent=icons[from]||'🏆';
+  document.getElementById('result-title').textContent=d.resultTitle;
+  if(from==='quiz'){
+    const cor=d.questions.length-(3-lives);
+    document.getElementById('result-pts').textContent='+'+score+' XP';
+    document.getElementById('result-detail').textContent=cor+'/'+d.questions.length+' correct';
+    document.getElementById('result-badges').innerHTML='<div class="grb"><span class="grb-ico">🧠</span><span class="grb-lbl">Quiz</span></div>'+
+      (cor===d.questions.length?'<div class="grb"><span class="grb-ico">⭐</span><span class="grb-lbl">Perfect</span></div>':'');
+  } else {
+    document.getElementById('result-pts').textContent='+'+score+' XP';
+    document.getElementById('result-detail').textContent='Crisis resolved!';
+    document.getElementById('result-badges').innerHTML='<div class="grb"><span class="grb-ico">🆘</span><span class="grb-lbl">Survivor</span></div>';
+  }
+  setGameState('result');
+}
+
+// initialise
+updateHUD();
+</script>
+</body>
+</html>
