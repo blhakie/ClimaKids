@@ -482,7 +482,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ### Current Partners
 - **New Hope Foundation** — Tree planting implementation (1,000 pts = 1 tree)
-- **Ministry of Education and Human Development (Mozambique)** — Curriculum alignment
+- **Ministry of Education and Culture (Mozambique)** — Curriculum alignment
 
 ### Seeking Partnerships
 - **Green Climate Fund** — Climate education funding
