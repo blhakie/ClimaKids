@@ -157,7 +157,6 @@ Built with **Leaflet.js + PostGIS**:
 | Battery | Li-Ion 3.7V 2000mAh + TP4056 | ~8h autonomy | 
 | Enclosure | ABS UV-resistant (IP54) | Weather protection | 
 
-**Total Kit Cost:** $18-31 per unit (scales to $14-22 in batches of 100+)
 
 ### Firmware Features
 - BLE advertising with service UUID identification
