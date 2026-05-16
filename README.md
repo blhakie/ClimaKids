@@ -1,6 +1,7 @@
 # ClimaKids
 Transforming students into climate scientists through IoT sensors, gamification &amp; AI. Mobile app + bilingual game + real-time climate mapping. Measures temperature, CO₂, UV &amp; humidity. 
-# ClimaKids — Unified Climate Literacy Platform
+# ClimaKids — Unified Climate Literacy Platform 
+# Live Preview https://climakids.aguiaconsultores.com/
 
 **Empowering Mozambican youth to understand, measure, and act on climate change through real IoT sensors, gamification, and AI.**
 
