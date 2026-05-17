@@ -20,7 +20,7 @@ This platform transforms students aged 10-16 into active climate data collectors
 - **Real IoT sensor kits** measuring temperature, humidity, CO₂, UV index, and rainfall
 - **Gamified mobile app** with missions, XP progression, and AI-powered learning
 - **Collaborative climate map** visualizing community environmental data
-- **Bilingual educational game** with instant PT ↔ EN switching
+- **Multi language educational game** with instant switching
 - **Real-world impact** — student points convert to trees planted via NGO partnerships
 
 ---
